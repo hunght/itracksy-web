@@ -18,6 +18,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { DownloadButton } from '@/components/download-button';
+import { appLinks, appVersion } from '@/config/app-links';
 
 const description =
   'iTracksy: AI-powered Chrome extension for smart browsing. Get website summaries, YouTube insights, and access an AI Prompt Library.';
@@ -55,21 +56,6 @@ export default async function Home() {
 
   return (
     <>
-      <JsonLd<SoftwareApplication>
-        item={{
-          '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: 'iTracksy',
-          operatingSystem: 'Chrome',
-          applicationCategory: 'BrowserExtension',
-          offers: {
-            '@type': 'Offer',
-            price: '0',
-            priceCurrency: 'USD',
-          },
-        }}
-      />
-
       <div className="min-h-dvh relative flex flex-col bg-background">
         <SiteHeader />
         <main className="flex-1">
@@ -103,7 +89,7 @@ export default async function Home() {
                     </p>
                     <div className="flex items-center space-x-4">
                       <a
-                        href="https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy-1.0.138.Setup.exe"
+                        href={appLinks.windows}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-1 rounded-md bg-blue-100 px-3 py-1 transition-colors hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800"
@@ -139,7 +125,7 @@ export default async function Home() {
                       </a>
 
                       <a
-                        href="https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy-1.0.138-arm64.dmg"
+                        href={appLinks.macos}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-1 rounded-md bg-gray-100 px-3 py-1 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700"
@@ -166,7 +152,7 @@ export default async function Home() {
                         </span>
                       </a>
                       <a
-                        href="https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy_1.0.138_amd64.deb"
+                        href={appLinks.linux}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-1 rounded-md bg-slate-100 px-3 py-1 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
@@ -195,7 +181,7 @@ export default async function Home() {
 
                     <div className="mt-4">
                       <a
-                        href="https://github.com/itracksy/itracksy/releases/tag/v1.0.138"
+                        href={appLinks.releases}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center text-sm text-primary hover:underline"

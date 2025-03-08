@@ -1,36 +1,35 @@
+import { appLinks, appVersion } from '@/config/app-links';
+
 export const handleDownload = () => {
   // Only run in browser environment
   if (typeof window !== 'undefined') {
     const userAgent = window.navigator.userAgent;
     let downloadUrl = '';
 
+    // Cast navigator to extended type that includes userAgentData
+    const nav = navigator;
+
     // Detect OS
     if (userAgent.indexOf('Windows') !== -1) {
       // Windows
-      downloadUrl =
-        'https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy-1.0.138.Setup.exe';
+      downloadUrl = appLinks.windows;
     } else if (userAgent.indexOf('Mac') !== -1) {
       // macOS
-      if (
-        userAgent.indexOf('ARM') !== -1 ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-      ) {
-        // ARM Mac (M1/M2)
-        downloadUrl =
-          'https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy-1.0.138-arm64.dmg';
+      // Note: navigator.platform is deprecated, but there's no perfect alternative
+      // for detecting Apple Silicon vs Intel Mac in JavaScript
+      if (userAgent.indexOf('ARM') !== -1) {
+        // ARM Mac explicitly mentioned in UA
+        downloadUrl = appLinks.macos;
       } else {
-        // Intel Mac
-        downloadUrl =
-          'https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy-1.0.138-arm64.dmg';
+        // Default to Intel Mac for older browsers or when detection is uncertain
+        downloadUrl = appLinks.macosIntel || appLinks.macos;
       }
     } else if (userAgent.indexOf('Linux') !== -1) {
       // Linux
-      downloadUrl =
-        'https://github.com/itracksy/itracksy/releases/download/v1.0.138/itracksy_1.0.138_amd64.deb';
+      downloadUrl = appLinks.linux;
     } else {
       // Default to GitHub release page if OS can't be detected
-      downloadUrl =
-        'https://github.com/itracksy/itracksy/releases/tag/v1.0.138';
+      downloadUrl = appLinks.releases;
     }
 
     // Trigger download by redirecting to the appropriate URL
