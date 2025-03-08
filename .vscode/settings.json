@@ -1,0 +1,9 @@
+{
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "debug.javascript.automaticallyTunnelRemoteServer": false,
+  "debug.javascript.usePreview": false,
+  "debug.sourceMaps": "inlined",
+  "editor.formatOnSave": true
+}
