@@ -1,11 +1,10 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { buttonVariants } from './ui/button';
-
 import { MobileNav } from './mobile-nav';
 import { ModeToggle } from './mode-toggle';
-
 import Image from 'next/image';
+import { DownloadNowButton } from './download-now-button';
 
 interface SiteHeaderProps {
   isLoginPage?: boolean;
@@ -50,15 +49,8 @@ export function SiteHeader({ isLoginPage = false }: SiteHeaderProps) {
               <ModeToggle />
             </div>
           </nav>
-          <Link
-            href="/signup"
-            className={cn(
-              buttonVariants({ size: 'sm' }),
-              'rounded-full bg-amber-500 font-medium text-white hover:bg-amber-600',
-            )}
-          >
-            Grab it now
-          </Link>
+
+          <DownloadNowButton />
 
           <MobileNav isAuthenticated={false} />
         </div>
