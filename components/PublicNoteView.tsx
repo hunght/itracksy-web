@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react';
 import ReactMarkdown, { Components } from 'react-markdown';
 import { NoteType } from '@/types/note';
-import { TextToSpeech } from '@/app/dashboard/components/TextToSpeech';
+
 import { useAtomValue } from 'jotai';
 import { fontAtom, speedAtom } from '@/state/fastReadSettings';
 import { CloneNoteButton } from '@/components/CloneNoteButton';
@@ -177,9 +177,7 @@ export const PublicNoteView: React.FC<{
 
   if (!note) return <div>PublicNoteView Note not found noteId</div>;
   return (
-    <div
-      className={`${fontOptions[font]} mx-auto max-w-4xl`}
-    >
+    <div className={`${fontOptions[font]} mx-auto max-w-4xl`}>
       <div className="rounded-lg p-4 transition-colors">
         <div className="mb-4 flex flex-col items-center justify-between gap-2 sm:flex-row">
           <h1 className="text-center text-2xl font-bold sm:text-left sm:text-3xl">
@@ -191,7 +189,7 @@ export const PublicNoteView: React.FC<{
 
         {!isReadingMode && note.summary && note.summary.length > 0 && (
           <div className="mt-4 rounded-lg bg-gray-100 p-3 dark:bg-gray-800/50 sm:p-4">
-            <div className="flex flex-wrap items-center gap-2 border-b-2 border-gray-200 dark:border-gray-700 py-2">
+            <div className="flex flex-wrap items-center gap-2 border-b-2 border-gray-200 py-2 dark:border-gray-700">
               <h3 className="text-lg font-semibold">Summary</h3>
               <CloneNoteButton note={note} />
             </div>
@@ -205,7 +203,6 @@ export const PublicNoteView: React.FC<{
           <div className="">
             <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b px-1 py-1 shadow-sm backdrop-blur-sm">
               <div className="flex items-center gap-2">
-                {!isReading && <TextToSpeech />}
                 {!isReadingMode && <CloneNoteButton note={note} />}
 
                 {!isPausedAudio && !isPlayingAudio && (
