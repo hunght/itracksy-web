@@ -1,11 +1,20 @@
 'use client';
 
+import { useAppVersion } from '@/hooks/use-app-version';
 import { handleDownload } from '@/utils/handleDownload';
+import { MouseEventHandler } from 'react';
 
 export function DownloadButton() {
+  const { links, loading } = useAppVersion();
+
+  const handleClick: MouseEventHandler<HTMLButtonElement> = (e) => {
+    e.preventDefault();
+    // Use the dynamically fetched links
+    handleDownload(links);
+  };
   return (
     <button
-      onClick={handleDownload}
+      onClick={handleClick}
       className="relative rounded-full bg-amber-500 px-8 py-4 font-medium text-white hover:bg-amber-600"
     >
       Get the tracker for Free!
