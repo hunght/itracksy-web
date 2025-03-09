@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { siteConfig } from '@/config/site'; // Import siteConfig
 
 import { Button } from '@/components/ui/button';
 import {
@@ -72,7 +73,7 @@ export default function FeedbackPage() {
     e.preventDefault();
 
     submitFeedback(
-      { name, email, feedback_type: feedbackType, message },
+      { name: `iTracksy:${name}`, email, feedback_type: feedbackType, message },
       {
         onSuccess: () => {
           // Reset form
@@ -161,14 +162,22 @@ export default function FeedbackPage() {
               />
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex flex-wrap gap-4">
             <Button
               type="submit"
               variant="default"
-              className="w-full"
+              className="flex-1"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => window.open(siteConfig.links.discord, '_blank')}
+            >
+              Join our Discord
             </Button>
           </CardFooter>
         </form>
