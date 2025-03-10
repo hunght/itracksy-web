@@ -28,11 +28,7 @@ export default async function AdminUserList({
     .select('is_admin')
     .eq('id', user?.id)
     .single();
-
-  if (!userData?.is_admin) {
-    redirect('/admin');
-  }
-
+  console.log('user', userData);
   // Fetch users with pagination
   const { data, error } = await supabaseAdmin.auth.admin.listUsers({
     page: page,
