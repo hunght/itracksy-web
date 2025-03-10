@@ -33,7 +33,7 @@ export const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
       <Body style={main}>
         <Container style={container}>
           <Img
-            src={'https://www.itracksy.com/logo-300.png'}
+            src={'https://www.itracksy.com/icon-300.png'}
             width={100}
             height={100}
             alt="iTracksy Logo"

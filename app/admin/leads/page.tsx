@@ -70,12 +70,12 @@ export default function LeadsPage() {
     }
 
     setIsSendingInvites(true);
-    
+
     try {
       // Track successful and failed invites
       let successCount = 0;
       let failedCount = 0;
-      
+
       // Process each lead sequentially to avoid overwhelming the server
       for (const lead of selectedLeads) {
         try {
@@ -90,33 +90,37 @@ export default function LeadsPage() {
               expiryDays: 14, // Two weeks expiry for leads
             }),
           });
-          
+
           const data = await response.json();
-          
+
           if (response.ok && data.success) {
             successCount++;
           } else {
             failedCount++;
-            console.error(`Failed to send invite to ${lead.email}:`, data.error || 'Unknown error');
+            console.error(
+              `Failed to send invite to ${lead.email}:`,
+              data.error || 'Unknown error',
+            );
           }
-          
+
           // Small delay to prevent rate limiting
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         } catch (error) {
           failedCount++;
           console.error(`Error sending invite to ${lead.email}:`, error);
         }
       }
-      
+
       // Show summary toast
       if (successCount > 0) {
         toast.success(`Successfully sent ${successCount} beta invitations`);
       }
-      
+
       if (failedCount > 0) {
-        toast.error(`Failed to send ${failedCount} invitations. Check console for details.`);
+        toast.error(
+          `Failed to send ${failedCount} invitations. Check console for details.`,
+        );
       }
-      
     } catch (error) {
       console.error('Error sending beta invites:', error);
       toast.error('An error occurred while sending invitations');
@@ -159,8 +163,8 @@ export default function LeadsPage() {
                     {selectedLeads.length} of {leadsList.length} selected
                   </span>
                   {selectedLeads.length > 0 && (
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={sendBetaInvites}
                       disabled={isSendingInvites}
                       className="flex items-center gap-2"
@@ -182,24 +186,29 @@ export default function LeadsPage() {
               </div>
               <ul className="space-y-4">
                 {leadsList.map((lead) => (
-                  <li key={lead.id} className="flex border-b pb-4">
-                    <div className="mr-4 pt-1">
-                      <Checkbox
-                        id={`lead-${lead.id}`}
-                        checked={selectedLeads.some(
-                          (selected) => selected.id === lead.id,
-                        )}
-                        onCheckedChange={() => toggleLeadSelection(lead)}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{lead.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {new Date(lead.created_at).toLocaleString()}
-                      </p>
-                      <p className="text-sm text-gray-500">{lead.email}</p>
-                      <p className="text-sm text-gray-500">{lead.phone}</p>
-                      <p className="mt-1">{lead.message}</p>
+                  <li key={lead.id} className="flex items-center border-b py-2">
+                    <Checkbox
+                      id={`lead-${lead.id}`}
+                      checked={selectedLeads.some(
+                        (selected) => selected.id === lead.id,
+                      )}
+                      onCheckedChange={() => toggleLeadSelection(lead)}
+                      className="mr-3"
+                    />
+                    <div className="grid flex-1 grid-cols-5 gap-4">
+                      <span className="truncate font-semibold">
+                        {lead.name}
+                      </span>
+                      <span className="truncate text-sm text-gray-500">
+                        {lead.email}
+                      </span>
+                      <span className="truncate text-sm text-gray-500">
+                        {lead.phone}
+                      </span>
+                      <span className="truncate text-sm">{lead.message}</span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(lead.created_at).toLocaleDateString()}
+                      </span>
                     </div>
                   </li>
                 ))}
