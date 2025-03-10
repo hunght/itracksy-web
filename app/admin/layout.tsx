@@ -10,8 +10,8 @@ export default function AdminLayout({
     <div>
       <Tabs defaultValue="/admin" className="mb-6 w-full">
         <TabsList>
-          <TabsTrigger value="/admin" asChild>
-            <Link href="/admin">User List</Link>
+          <TabsTrigger value="/leads" asChild>
+            <Link href="/admin/leads">Leads List</Link>
           </TabsTrigger>
           <TabsTrigger value="/admin/marketing-campaigns" asChild>
             <Link href="/admin/marketing-campaigns">Marketing Campaigns</Link>
