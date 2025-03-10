@@ -22,15 +22,7 @@ export type Database = {
           id?: string
           stripe_customer_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "customers_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       feedback: {
         Row: {
@@ -56,6 +48,33 @@ export type Database = {
           id?: string
           message?: string | null
           name?: string | null
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          message: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
         }
         Relationships: []
       }
@@ -145,13 +164,6 @@ export type Database = {
             referencedRelation: "notes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "public_notes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       prices: {
@@ -231,6 +243,33 @@ export type Database = {
         }
         Relationships: []
       }
+      prompts: {
+        Row: {
+          bot_id: string | null
+          created_at: string
+          id: string | null
+          name: string | null
+          prompt: string | null
+          user_id: string
+        }
+        Insert: {
+          bot_id?: string | null
+          created_at?: string
+          id?: string | null
+          name?: string | null
+          prompt?: string | null
+          user_id?: string
+        }
+        Update: {
+          bot_id?: string | null
+          created_at?: string
+          id?: string | null
+          name?: string | null
+          prompt?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at: string | null
@@ -291,13 +330,6 @@ export type Database = {
             referencedRelation: "prices"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       tags: {
@@ -355,15 +387,7 @@ export type Database = {
           payment_method?: Json | null
           username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "users_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
@@ -471,4 +495,19 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
