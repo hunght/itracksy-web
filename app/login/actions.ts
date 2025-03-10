@@ -31,16 +31,18 @@ export const signIn = async (formData: FormData) => {
 };
 
 export const signUp = async (formData: FormData) => {
-  const origin = headers().get('origin');
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const supabase = createClient();
+  
+  // Get the site URL from environment variable or fallback to the origin header
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
@@ -52,13 +54,15 @@ export const signUp = async (formData: FormData) => {
 };
 
 export async function loginWithGoogle() {
-  const origin = headers().get('origin');
   const supabase = createClient();
+  
+  // Get the site URL from environment variable or fallback to the origin header
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: `${siteUrl}/auth/callback`,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
@@ -77,14 +81,16 @@ export async function loginWithGoogle() {
 }
 
 export const loginWithOTP = async (formData: FormData) => {
-  const origin = headers().get('origin');
   const email = formData.get('email') as string;
   const supabase = createClient();
+  
+  // Get the site URL from environment variable or fallback to the origin header
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
