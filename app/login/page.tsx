@@ -14,9 +14,9 @@ import { EmailOTPInput } from './EmailOTPInput';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Login to BuddyBeep | AI-Powered Browsing Assistant',
+  title: 'Login to iTracksy | Activity & Project Tracking Assistant',
   description:
-    'Securely log in to your BuddyBeep account and start enhancing your browsing experience with AI-powered features.',
+    'Securely log in to your iTracksy account and start tracking your activities, managing projects, and analyzing your productivity.',
   robots: 'noindex, nofollow', // Prevent indexing of login page
 };
 
@@ -30,25 +30,25 @@ export default function Login({
       <Card className="w-full max-w-md overflow-hidden rounded-lg shadow-2xl">
         <CardHeader className="pb-2 text-center">
           <CardTitle className="text-4xl font-bold text-foreground">
-            Welcome to BuddyBeep
+            Welcome to iTracksy
           </CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Your personal space for ideas and thoughts
+            Your productivity tracking companion
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8">
           <div className="mb-8 flex justify-center">
             <Image
               src={'/logo-300.png'}
-              alt="NoteApp Logo"
+              alt="iTracksy Logo"
               width={120}
               height={120}
               className="rounded-full shadow-md"
             />
           </div>
           <p className="mb-8 text-center text-base text-muted-foreground">
-            Organize your notes, capture your ideas, and access them from
-            anywhere. Sign in to get started or continue your journey.
+            Track your activities, manage projects, and gain valuable insights
+            into your productivity. Sign in to start optimizing your workflow.
           </p>
           <form>
             <Button

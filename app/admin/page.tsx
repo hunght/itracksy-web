@@ -30,7 +30,7 @@ export default async function AdminUserList({
     .single();
 
   if (!userData?.is_admin) {
-    redirect('/dashboard');
+    redirect('/admin');
   }
 
   // Fetch users with pagination

@@ -68,7 +68,7 @@ export async function updateSession(request: NextRequest) {
 
   // Check if the request is for the dashboard or account pages
   if (
-    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/admin') ||
     request.nextUrl.pathname.startsWith('/account')
   ) {
     // If there's no user, redirect to the login page

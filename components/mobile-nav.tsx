@@ -77,7 +77,7 @@ export const MobileNav: React.FunctionComponent<{
             </NavLink>
             {isAuthenticated ? (
               <>
-                <NavLink href="/dashboard" icon={User}>
+                <NavLink href="/admin" icon={User}>
                   Dashboard
                 </NavLink>
                 <NavLink href="/account" icon={User}>

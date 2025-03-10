@@ -49,7 +49,7 @@ export const CloneNoteButton: React.FC<{ note: NoteType }> = ({ note }) => {
         description: 'The note has been successfully cloned to your account.',
       });
 
-      router.push(`/dashboard/${clonedNote.id}`);
+      router.push(`/admin/${clonedNote.id}`);
     } catch (error) {
       console.error('Error cloning note:', error);
       toast({

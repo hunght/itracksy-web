@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   // if "next" is in param, use it as the redirect URL
-  const next = searchParams.get('next') ?? '/dashboard';
+  const next = searchParams.get('next') ?? '/admin';
 
   if (code) {
     const cookieStore = cookies();
@@ -41,5 +41,7 @@ export async function GET(request: Request) {
   }
 
   // return the user to an error page with some instructions
-  return NextResponse.redirect(new URL('/login?message=Could not authenticate user', origin));
+  return NextResponse.redirect(
+    new URL('/login?message=Could not authenticate user', origin),
+  );
 }
