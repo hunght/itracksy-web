@@ -32,24 +32,63 @@ export function UploadLeadsModal() {
     reader.onload = async (event) => {
       const csvText = event.target?.result as string;
       const lines = csvText.split('\n');
+
+      // Find header indexes
       const headers = lines[0].split(',');
+      const dateIndex = headers.findIndex((h) =>
+        h.trim().toLowerCase().includes('date'),
+      );
+      const emailIndex = headers.findIndex((h) =>
+        h.trim().toLowerCase().includes('email'),
+      );
+      const idIndex = headers.findIndex((h) =>
+        h.trim().toLowerCase().includes('id'),
+      );
+
+      if (emailIndex === -1) {
+        toast({
+          title: 'Invalid CSV Format',
+          description: 'CSV must contain an Email column.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       const leads = lines
         .slice(1)
+        .filter((line) => line.trim() !== '') // Skip empty lines
         .map((line) => {
           const values = line.split(',');
+          const email = values[emailIndex]?.trim() || '';
+          const submissionDate =
+            values[dateIndex]?.trim() || new Date().toISOString();
+          const submissionId = values[idIndex]?.trim() || '';
+
+          // Extract username from email to use as name
+          const name = email.split('@')[0] || 'Unknown';
+
           return {
-            name: values[0],
-            email: values[1],
-            phone: values[2],
-            message: values[3],
+            name: name,
+            email: email,
+            phone: 'Not provided', // Default value
+            message: `Imported from CSV. Submission ID: ${submissionId}, Date: ${submissionDate}`, // Default with metadata
           };
         })
-        .filter((lead) => lead.name && lead.email);
+        .filter((lead) => lead.email); // Only keep entries with email
+
+      if (leads.length === 0) {
+        toast({
+          title: 'No valid leads found',
+          description: 'The CSV file did not contain any valid lead data.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
       uploadLeads(leads, {
         onSuccess: () => {
           setOpen(false);
+          e.target.value = ''; // Reset file input
           queryClient.invalidateQueries({ queryKey: ['leads'] });
           toast({
             title: 'Upload Successful',
@@ -57,6 +96,7 @@ export function UploadLeadsModal() {
           });
         },
         onError: (error) => {
+          console.error('Upload error:', error);
           toast({
             title: 'Upload Error',
             description: 'Failed to import leads. Please try again.',
@@ -86,7 +126,11 @@ export function UploadLeadsModal() {
             disabled={isUploading}
           />
           <p className="text-sm text-gray-500">
-            CSV should have columns: name, email, phone, message
+            Your CSV should include at least an Email column. Submission Date
+            and Submission ID are optional.
+          </p>
+          <p className="text-sm text-gray-500">
+            {isUploading ? 'Uploading...' : 'Select a CSV file to upload.'}
           </p>
         </div>
       </DialogContent>
