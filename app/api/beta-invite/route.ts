@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { sendBetaInviteEmail } from '@/app/services/email';
-import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
