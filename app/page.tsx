@@ -1,7 +1,7 @@
 import { sortPosts } from '@/lib/utils';
 import { posts } from '#site/content';
 import { PostItem } from '@/components/post-item';
-import { InstallButton } from '@/components/install-button';
+
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { createClient } from '@/lib/supabase/server';
@@ -18,19 +18,20 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { DownloadButton } from '@/components/download-button';
+import { DownloadNowButton } from '@/components/download-now-button';
 import { appLinks, appVersion } from '@/config/app-links';
 
 const description =
-  'iTracksy: AI-powered Chrome extension for smart browsing. Get website summaries, YouTube insights, and access an AI Prompt Library.';
+  'iTracksy: Open-source time tracking application for personal and team productivity. Track your time, analyze performance, and boost productivity. Free and privacy-focused.';
 
 export const metadata: Metadata = {
-  title: 'iTracksy: AI-Powered Chrome Extension for Smart Browsing',
+  title: 'iTracksy: Open-Source Time Tracking Application',
   description: description,
   keywords:
-    'AI, Chrome extension, browsing assistant, website summaries, YouTube insights, AI prompts',
+    'time tracking, productivity, open-source, desktop app, team productivity, time management',
   viewport: 'width=device-width, initial-scale=1',
   openGraph: {
-    title: 'iTracksy - AI-Powered Browsing Assistant',
+    title: 'iTracksy - Open-Source Time Tracking Application',
     description: description,
     type: 'website',
     url: 'https://www.itracksy.com',
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'iTracksy - AI-Powered Browsing Assistant',
+    title: 'iTracksy - Open-Source Time Tracking Application',
     description: description,
     images: ['https://www.itracksy.com/logo-300.png'],
   },
@@ -237,7 +238,7 @@ export default async function Home() {
               <div className="mb-12 text-center">
                 <h2 className="text-4xl font-bold">
                   <span className="text-amber-500">
-                    Productive, Light, Free and private
+                    Productive, Light, Free and Private
                   </span>
                 </h2>
               </div>
@@ -272,11 +273,12 @@ export default async function Home() {
                     </div>
                     <div>
                       <h3 className="mb-2 text-xl font-semibold">
-                        Designed for your performances
+                        Track Time Effortlessly
                       </h3>
                       <p className="text-slate-300">
-                        Features are built for your productivity, so expect
-                        innovative methods and system to keep it highest.
+                        Simple interface designed to track your work seamlessly.
+                        Focus on your tasks while iTracksy handles the time
+                        tracking.
                       </p>
                     </div>
                   </div>
@@ -300,11 +302,12 @@ export default async function Home() {
                     </div>
                     <div>
                       <h3 className="mb-2 text-xl font-semibold">
-                        Meant to save time, not waste
+                        Insightful Reports
                       </h3>
                       <p className="text-slate-300">
-                        Smart, intuitive design and low resource use ensure a
-                        pleasant experience for you.
+                        Get detailed insights about how you spend your time with
+                        visual reports and analytics to optimize your
+                        productivity.
                       </p>
                     </div>
                   </div>
@@ -335,12 +338,12 @@ export default async function Home() {
                     </div>
                     <div>
                       <h3 className="mb-2 text-xl font-semibold">
-                        Open source, free and private
+                        Open Source and Privacy-Focused
                       </h3>
                       <p className="text-slate-300">
-                        As an open source and free platform, we don&apos;t have
-                        any interest in your private data. You don&apos;t need
-                        to worry about exposing your private data.
+                        As an open-source application, iTracksy respects your
+                        privacy. Your data stays local and under your control at
+                        all times.
                       </p>
                     </div>
                   </div>
@@ -385,18 +388,22 @@ export default async function Home() {
 
           <section className="cta-section bg-primary/10 py-16">
             <div className="container mx-auto px-4 text-center">
-              <h2 className="mb-6 text-3xl font-bold">Ready to Get Started?</h2>
+              <h2 className="mb-6 text-3xl font-bold">
+                Ready to Boost Your Productivity?
+              </h2>
               <p className="mb-8 text-lg">
-                Join thousands of users who are already enjoying the benefits of
-                AI-powered browsing with iTracksy.
+                Join the growing community of users who are tracking their time
+                more effectively with iTracksy.
               </p>
-              <InstallButton isAutoDetect={true} />
+              <DownloadNowButton size="lg">
+                Download iTracksy Now
+              </DownloadNowButton>
               <div className="mt-4">
                 <Link
-                  href="/blog/testimonials"
+                  href="/blog/use-cases"
                   className="text-primary hover:underline"
                 >
-                  See what our users are saying
+                  See how others are using iTracksy
                 </Link>
               </div>
             </div>
