@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
 
     if (
       user.email !== 'hunghero321@gmail.com' &&
-      user.email !== 'hth321@gmail.com'
+      user.email !== 'hth321@gmail.com' &&
+      user.email !== 'pvhieu30@gmail.com'
     ) {
       return NextResponse.json(
         { error: 'Forbidden: Admin access required' },

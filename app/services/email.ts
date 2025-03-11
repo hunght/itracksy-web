@@ -9,6 +9,11 @@ import BetaInviteEmail from '../../emails/BetaInviteEmail';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const devEmail = 'hth321@gmail.com';
+const adminEmails = [
+  'hunghero321@gmail.com',
+  'hth321@gmail.com',
+  'pvhieu30@gmail.com',
+];
 
 // New common function to send emails with retry logic
 async function sendEmailWithRetry(
