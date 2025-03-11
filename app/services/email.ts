@@ -110,13 +110,9 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
 export async function sendBetaInviteEmail({
   userEmail,
   recipientName,
-  inviteCode,
-  expiryDays = 7,
 }: {
   userEmail: string;
   recipientName?: string;
-  inviteCode?: string;
-  expiryDays?: number;
 }) {
   const toEmail = isDevelopment ? devEmail : userEmail;
   console.log('[sendBetaInviteEmail] userEmail', userEmail);
@@ -126,7 +122,7 @@ export async function sendBetaInviteEmail({
       await sendEmailWithRetry({
         to: toEmail,
         subject: 'Exclusive Invitation: Join the iTracksy Beta!',
-        react: BetaInviteEmail({ recipientName, inviteCode, expiryDays }),
+        react: BetaInviteEmail({ recipientName }),
       });
 
       if (isDevelopment) {

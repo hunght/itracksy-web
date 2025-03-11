@@ -1,3 +1,4 @@
+import { siteConfig } from '@/config/site';
 import {
   Body,
   Button,
@@ -15,21 +16,21 @@ import * as React from 'react';
 
 interface BetaInviteEmailProps {
   recipientName?: string;
-  inviteCode?: string;
-  expiryDays?: number;
 }
 
-export const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
+const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
   recipientName = 'there',
-  inviteCode = 'BETATESTER2024',
-  expiryDays = 7,
 }) => {
-  const signupUrl = `https://www.itracksy.com/signup?code=${inviteCode}`;
+  const downloadUrl = 'https://www.itracksy.com/download';
+  const feedbackUrl = 'https://www.itracksy.com/feedback';
+  const discordUrl = siteConfig.links.discord;
 
   return (
     <Html>
       <Head />
-      <Preview>You&apos;re invited to try iTracksy Beta!</Preview>
+      <Preview>
+        iTracksy has been released and is available to download now!
+      </Preview>
       <Body style={main}>
         <Container style={container}>
           <Img
@@ -39,57 +40,48 @@ export const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
             alt="iTracksy Logo"
             style={logo}
           />
-          <Heading style={h1}>Exclusive Beta Access</Heading>
+          <Heading style={h1}>iTracksy has been released!</Heading>
           <Text style={text}>Hello {recipientName},</Text>
           <Text style={text}>
-            You&apos;ve been selected for exclusive early access to iTracksy -
-            your productivity tracking companion!
+            First of all, we would like to thank you for patently waiting for
+            iTracksy. We are delighted to announce that the first version of
+            iTracksy, your time management tool and productivity booster, has
+            been released 🥳
           </Text>
 
-          <Section style={betaBox}>
-            <Heading as="h2" style={h2}>
-              Your Invitation Details
-            </Heading>
-            <Text style={codeText}>
-              <strong>Your invite code:</strong> {inviteCode}
-            </Text>
-            <Text style={noteText}>This code expires in {expiryDays} days</Text>
-          </Section>
-
-          <Text style={text}>As a beta tester, you&apos;ll get:</Text>
-
-          <ul style={list}>
-            <li style={listItem}>Early access to all premium features</li>
-            <li style={listItem}>
-              Direct feedback channel to our development team
-            </li>
-            <li style={listItem}>
-              Influence on future features and improvements
-            </li>
-            <li style={listItem}>Extended free trial period when we launch</li>
-          </ul>
-
-          <Button style={btn} href={signupUrl}>
-            Accept Invitation
+          <Button style={btn} href={downloadUrl}>
+            Download iTracksy
           </Button>
+
+          <Text style={text}>
+            On the other hand, we really apologize for the delay because of some
+            critical bugs, but we did not give up and finally can deliver
+            iTracksy to you. So, to make this application better for everyone,
+            your feedbacks and bug reports are highly appreciated or you can
+            join the development with us on Discord 🤗
+          </Text>
+
+          <Section style={buttonContainer}>
+            <Button style={secondaryBtn} href={feedbackUrl}>
+              Submit Feedback
+            </Button>
+            <Button style={secondaryBtn} href={discordUrl}>
+              Join Discord
+            </Button>
+          </Section>
 
           <Hr style={divider} />
 
-          <Text style={smallText}>
-            This invitation is exclusive to you and cannot be shared. The invite
-            code is valid for {expiryDays} days.
+          <Text style={text}>
+            Once again, thank you very much for believing, understanding and
+            waiting for us. We hope iTracksy can bring to you all the best that
+            you look for in a time management application 💗
           </Text>
 
           <Text style={text}>
-            We&apos;re excited to have you on board during this crucial
-            development phase. Your feedback will be invaluable in shaping the
-            future of iTracksy.
-          </Text>
-
-          <Text style={text}>
-            Best regards,
+            All the best,
             <br />
-            The iTracksy Team
+            iTracksy Team
           </Text>
         </Container>
       </Body>
@@ -123,27 +115,11 @@ const h1 = {
   textAlign: 'center' as const,
 };
 
-const h2 = {
-  color: '#1d1c1d',
-  fontSize: '24px',
-  fontWeight: '600',
-  margin: '15px 0',
-  padding: '0',
-};
-
 const text = {
   color: '#4a4a4a',
   fontSize: '18px',
   lineHeight: '1.4',
   margin: '0 0 20px',
-};
-
-const smallText = {
-  color: '#6b6b6b',
-  fontSize: '14px',
-  lineHeight: '1.4',
-  margin: '10px 0 20px',
-  fontStyle: 'italic',
 };
 
 const btn = {
@@ -162,47 +138,30 @@ const btn = {
   transition: 'all 0.3s ease',
 };
 
-const betaBox = {
+const secondaryBtn = {
   backgroundColor: '#f9f5ff',
   borderRadius: '8px',
-  padding: '20px',
-  margin: '25px 0',
+  color: '#9333ea',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  padding: '12px 24px',
+  margin: '0 10px',
   border: '1px solid #e9d5ff',
+  boxShadow: '0 2px 4px rgba(147, 51, 234, 0.2)',
+  transition: 'all 0.3s ease',
 };
 
-const codeText = {
-  fontSize: '20px',
-  color: '#4a4a4a',
-  margin: '10px 0',
-  padding: '10px',
-  backgroundColor: '#ffffff',
-  borderRadius: '4px',
-  border: '1px dashed #9333ea',
-  textAlign: 'center' as const,
-};
-
-const noteText = {
-  fontSize: '14px',
-  color: '#6b6b6b',
-  margin: '5px 0 0',
-  textAlign: 'center' as const,
-};
-
-const list = {
-  margin: '0 0 20px',
-  padding: '0 0 0 20px',
-};
-
-const listItem = {
-  color: '#4a4a4a',
-  fontSize: '18px',
-  lineHeight: '1.4',
-  margin: '10px 0',
+const buttonContainer = {
+  display: 'flex',
+  justifyContent: 'center',
+  margin: '20px 0',
 };
 
 const divider = {
-  borderTop: '1px solid #e6e6e6',
-  margin: '30px 0 20px',
+  borderTop: '1px solid #e9d5ff',
+  margin: '30px 0',
 };
 
 export default BetaInviteEmail;

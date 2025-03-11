@@ -3,13 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import { sendBetaInviteEmail } from '@/app/services/email';
 import { randomUUID } from 'crypto';
 
-// Generate a unique invite code
-function generateInviteCode(): string {
-  // Create a short, readable code using a UUID prefix
-  const uuid = randomUUID().substring(0, 8);
-  return `BETA-${uuid.toUpperCase()}`;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();
@@ -33,20 +26,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body
-    const {
-      email,
-      name,
-      leadId,
-      inviteMessage,
-      expiryDays = 7,
-    } = await request.json();
+    const { email, name, leadId, inviteMessage } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
-
-    // Generate a unique invite code for email tracking
-    const inviteCode = generateInviteCode();
 
     // Store the invite in the database
     const { data: invite, error: inviteError } = await supabase
@@ -73,8 +57,6 @@ export async function POST(request: NextRequest) {
     const emailResult = await sendBetaInviteEmail({
       userEmail: email,
       recipientName: name,
-      inviteCode,
-      expiryDays,
     });
 
     if (!emailResult?.success) {

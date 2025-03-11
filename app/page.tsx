@@ -20,6 +20,7 @@ import {
 import { DownloadButton } from '@/components/download-button';
 import { DownloadNowButton } from '@/components/download-now-button';
 import { appLinks, appVersion } from '@/config/app-links';
+import { siteConfig } from '@/config/site';
 
 const description =
   'iTracksy: Open-source time tracking application for personal and team productivity. Track your time, analyze performance, and boost productivity with our free, privacy-focused desktop app for Windows, macOS, and Linux.';
@@ -108,9 +109,9 @@ export default async function Home() {
           description: description,
           inLanguage: 'en-US',
           sameAs: [
-            'https://github.com/itracksy/itracksy',
-            'https://twitter.com/buddy_beep_com',
-            'https://discord.gg/9vW4dzA6',
+            siteConfig.links.github,
+            siteConfig.links.twitter,
+            siteConfig.links.discord,
           ],
         }}
       />
@@ -641,7 +642,7 @@ export default async function Home() {
                   </CardHeader>
                   <div className="mt-auto pt-4">
                     <a
-                      href="https://discord.gg/9vW4dzA6"
+                      href={siteConfig.links.discord}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-sm font-medium text-primary hover:underline"
