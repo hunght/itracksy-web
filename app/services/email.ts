@@ -62,7 +62,7 @@ export async function sendInactivityEmail(userEmail: string) {
       react: InactivityEmail({}),
       tags: [
         { name: 'email_type', value: 'inactivity' },
-        { name: 'recipient_email', value: toEmail },
+        { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
       ],
     });
 
@@ -85,7 +85,7 @@ export async function sendWelcomeEmail(
       react: WelcomeEmail({ userFirstName }),
       tags: [
         { name: 'email_type', value: 'welcome' },
-        { name: 'recipient_email', value: toEmail },
+        { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
       ],
     });
 
@@ -105,7 +105,7 @@ export async function sendProductUpdateEmail(userEmail: string) {
       react: ProductUpdateEmail({}),
       tags: [
         { name: 'email_type', value: 'product_update' },
-        { name: 'recipient_email', value: toEmail },
+        { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
       ],
     });
   }
@@ -120,7 +120,7 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
         react: OTPEmail({ otp }),
         tags: [
           { name: 'email_type', value: 'otp' },
-          { name: 'recipient_email', value: userEmail },
+          { name: 'recipient_email', value: sanitizedToEmail(userEmail) },
         ],
       });
     }
@@ -128,7 +128,9 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
     console.error('Failed to send OTP email:', emailError);
   }
 }
-
+const sanitizedToEmail = (toEmail: string) => {
+  return toEmail ? toEmail.replace(/[^\w-]/g, '_') : 'there';
+};
 export async function sendBetaInviteEmail({
   userEmail,
   recipientName,
@@ -142,9 +144,6 @@ export async function sendBetaInviteEmail({
   try {
     if (toEmail) {
       // Sanitize recipient name for tag value - only allow ASCII letters, numbers, underscores, or dashes
-      const sanitizedRecipientName = recipientName
-        ? recipientName.replace(/[^\w-]/g, '_')
-        : 'there';
 
       await sendEmailWithRetry({
         to: toEmail,
@@ -152,7 +151,7 @@ export async function sendBetaInviteEmail({
         react: BetaInviteEmail({ recipientName }),
         tags: [
           { name: 'email_type', value: 'beta_invite' },
-          { name: 'recipient_email', value: toEmail },
+          { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
         ],
       });
 
