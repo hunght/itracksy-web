@@ -37,6 +37,7 @@ export type Database = {
       beta_invites: {
         Row: {
           clicked_at: string | null;
+          delivered_at: string | null;
           email: string;
           id: string;
           invite_message: string;
@@ -49,6 +50,7 @@ export type Database = {
         };
         Insert: {
           clicked_at?: string | null;
+          delivered_at?: string | null;
           email: string;
           id?: string;
           invite_message: string;
@@ -61,6 +63,7 @@ export type Database = {
         };
         Update: {
           clicked_at?: string | null;
+          delivered_at?: string | null;
           email?: string;
           id?: string;
           invite_message?: string;
