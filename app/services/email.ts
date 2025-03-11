@@ -86,7 +86,6 @@ export async function sendWelcomeEmail(
       tags: [
         { name: 'email_type', value: 'welcome' },
         { name: 'recipient_email', value: toEmail },
-        { name: 'recipient_name', value: userFirstName },
       ],
     });
 
@@ -142,6 +141,11 @@ export async function sendBetaInviteEmail({
 
   try {
     if (toEmail) {
+      // Sanitize recipient name for tag value - only allow ASCII letters, numbers, underscores, or dashes
+      const sanitizedRecipientName = recipientName
+        ? recipientName.replace(/[^\w-]/g, '_')
+        : 'there';
+
       await sendEmailWithRetry({
         to: toEmail,
         subject: 'Exclusive Invitation: Join the iTracksy Beta!',
@@ -149,7 +153,6 @@ export async function sendBetaInviteEmail({
         tags: [
           { name: 'email_type', value: 'beta_invite' },
           { name: 'recipient_email', value: toEmail },
-          { name: 'recipient_name', value: recipientName || 'there' },
         ],
       });
 

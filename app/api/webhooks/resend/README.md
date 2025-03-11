@@ -87,8 +87,7 @@ await sendEmailWithRetry({
   tags: [
     { name: 'email_type', value: 'welcome' },
     { name: 'recipient_email', value: recipientEmail },
-    { name: 'recipient_name', value: userFirstName }
-  ]
+  ],
 });
 ```
 
