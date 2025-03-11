@@ -35,7 +35,7 @@ export const ProductUpdateEmail: React.FC = () => (
         <Text style={p}>
           If you have any questions or need help with the new features, feel
           free to reply to this email or contact our support team at{' '}
-          <a href="mailto:support@itracksy.com">support@itracksy.com</a>.
+          <a href="mailto:support@buddybeep.com">support@buddybeep.com</a>.
         </Text>
       </Container>
     </Body>

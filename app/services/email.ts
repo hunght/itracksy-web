@@ -24,7 +24,7 @@ async function sendEmailWithRetry(
   while (retries < maxRetries) {
     try {
       const { data, error } = await resend.emails.send({
-        from: 'iTracksy <support@itracksy.com>',
+        from: 'iTracksy <noreply@itracksy.com>',
         ...emailOptions,
       });
 

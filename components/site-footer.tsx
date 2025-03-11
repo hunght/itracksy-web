@@ -11,7 +11,7 @@ export function SiteFooter() {
             <a
               target="_blank"
               rel="noreferrer"
-              href="mailto:support@itracksy.com"
+              href="mailto:support@buddybeep.com"
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
               <span className="sr-only">Mail</span>

@@ -1,9 +1,5 @@
 'use client';
 
-import { useSupabaseBrowser } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
-
-import { sessionAtom } from '@/state/noteAtom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
