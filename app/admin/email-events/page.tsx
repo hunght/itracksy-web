@@ -81,7 +81,7 @@ const EVENT_LABELS: Record<string, string> = {
 };
 
 export default function EmailEventsPage() {
-  const [emailType, setEmailType] = useState<string>('');
+  const [emailType, setEmailType] = useState<string>('all');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 30),
     to: new Date(),
@@ -100,7 +100,8 @@ export default function EmailEventsPage() {
       let url = '/api/email-stats';
       const params = new URLSearchParams();
 
-      if (emailType) params.append('emailType', emailType);
+      if (emailType && emailType !== 'all')
+        params.append('emailType', emailType);
       if (dateRange?.from)
         params.append('startDate', format(dateRange.from, 'yyyy-MM-dd'));
       if (dateRange?.to)
@@ -126,7 +127,8 @@ export default function EmailEventsPage() {
       let url = '/api/email-events';
       const params = new URLSearchParams();
 
-      if (emailType) params.append('emailType', emailType);
+      if (emailType && emailType !== 'all')
+        params.append('emailType', emailType);
       if (dateRange?.from)
         params.append('startDate', format(dateRange.from, 'yyyy-MM-dd'));
       if (dateRange?.to)
@@ -178,7 +180,7 @@ export default function EmailEventsPage() {
                   <SelectValue placeholder="All Email Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Email Types</SelectItem>
+                  <SelectItem value="all">All Email Types</SelectItem>
                   {EVENT_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type.charAt(0).toUpperCase() +
