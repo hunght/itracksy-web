@@ -1,7 +1,7 @@
 import { sortPosts } from '@/lib/utils';
 import { posts } from '#site/content';
 import { PostItem } from '@/components/post-item';
-
+import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { createClient } from '@/lib/supabase/server';
@@ -176,7 +176,7 @@ export default async function Home() {
                     <p className="mb-2 text-sm text-muted-foreground">
                       Available on
                     </p>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <a
                         href={appLinks.windows}
                         target="_blank"
@@ -185,29 +185,7 @@ export default async function Home() {
                         aria-label="Download for Windows"
                       >
                         <div className="flex h-8 w-8 items-center justify-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-blue-600 dark:text-blue-300"
-                          >
-                            <rect
-                              x="2"
-                              y="3"
-                              width="20"
-                              height="14"
-                              rx="2"
-                              ry="2"
-                            ></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                          </svg>
+                          <FaWindows className="text-blue-600 dark:text-blue-300" />
                         </div>
                         <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                           Windows
@@ -222,32 +200,31 @@ export default async function Home() {
                         aria-label="Download for macOS"
                       >
                         <div className="flex h-8 w-8 items-center justify-center">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-gray-600 dark:text-gray-300"
-                          >
-                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
-                            <path d="M14.5 4.5c-1.5 1.5-3.5 1-4.5 1.5-1 .5-2.5 2-3 3.5s.5 3.5 2 4.5c1.5 1 4 1.5 5 .5 1-1 1.5-2.5 1.5-3.5s-1-1.5-1.5-2-1.5-2-1.5-3c0-1 2-1.5 2-1.5"></path>
-                          </svg>
+                          <FaApple className="text-gray-600 dark:text-gray-300" />
                         </div>
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                           macOS
                         </span>
                       </a>
+
                       <a
                         href={appLinks.linux}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-1 rounded-md bg-slate-100 px-3 py-1 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
                         aria-label="Download for Linux"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center">
+                          <FaLinux className="text-slate-600 dark:text-slate-300" />
+                        </div>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Linux
+                        </span>
+                      </a>
+
+                      <div
+                        className="flex items-center space-x-1 rounded-md bg-green-50 px-3 py-1 dark:bg-green-900/30"
+                        aria-label="Coming soon for Android"
                       >
                         <div className="flex h-8 w-8 items-center justify-center">
                           <svg
@@ -260,17 +237,67 @@ export default async function Home() {
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="text-slate-600 dark:text-slate-300"
+                            className="text-green-600 dark:text-green-400"
                           >
-                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <rect
+                              x="5"
+                              y="2"
+                              width="14"
+                              height="20"
+                              rx="2"
+                              ry="2"
+                            />
+                            <circle cx="12" cy="18" r="1" />
                           </svg>
                         </div>
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          Linux
-                        </span>
-                      </a>
-                    </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                            Android
+                          </span>
+                          <span className="text-xs text-green-600 dark:text-green-500">
+                            Coming soon
+                          </span>
+                        </div>
+                      </div>
 
+                      <div
+                        className="flex items-center space-x-1 rounded-md bg-indigo-50 px-3 py-1 dark:bg-indigo-900/30"
+                        aria-label="Coming soon for iOS"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-indigo-600 dark:text-indigo-400"
+                          >
+                            <rect
+                              x="5"
+                              y="2"
+                              width="14"
+                              height="20"
+                              rx="2"
+                              ry="2"
+                            />
+                            <path d="M12 18h.01" />
+                          </svg>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-indigo-700 dark:text-indigo-400">
+                            iOS
+                          </span>
+                          <span className="text-xs text-indigo-600 dark:text-indigo-500">
+                            Coming soon
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="mt-4 flex flex-col space-y-2">
                       <a
                         href={appLinks.releases}
