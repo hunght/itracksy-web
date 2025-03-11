@@ -34,9 +34,9 @@ export const signUp = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const supabase = createClient();
-  
+
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
+  const siteUrl = headers().get('origin');
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -55,9 +55,9 @@ export const signUp = async (formData: FormData) => {
 
 export async function loginWithGoogle() {
   const supabase = createClient();
-  
+
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
+  const siteUrl = headers().get('origin');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -83,9 +83,9 @@ export async function loginWithGoogle() {
 export const loginWithOTP = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const supabase = createClient();
-  
+
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || headers().get('origin');
+  const siteUrl = headers().get('origin');
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
