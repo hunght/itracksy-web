@@ -1,4 +1,4 @@
-import { createAdminClient, createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import PageSizeSelector from './components/PageSizeSelector';
 import UserSelectionTable from './components/UserSelectionTable';
@@ -12,7 +12,7 @@ export default async function AdminUserList({
   searchParams: { page?: string; pageSize?: string };
 }) {
   const supabase = createClient();
-  const supabaseAdmin = createAdminClient();
+
   const page = parseInt(searchParams.page || '1', 10);
   const pageSize = parseInt(searchParams.pageSize || '50', 10);
 
