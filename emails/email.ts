@@ -4,4 +4,10 @@ import { InactivityEmail } from './InactivityEmail';
 import { OTPEmail } from './OTPEmail';
 import { BetaInviteEmail } from './BetaInviteEmail';
 
-export { WelcomeEmail, ProductUpdateEmail, InactivityEmail, OTPEmail, BetaInviteEmail };
+export {
+  WelcomeEmail,
+  ProductUpdateEmail,
+  InactivityEmail,
+  OTPEmail,
+  BetaInviteEmail,
+};

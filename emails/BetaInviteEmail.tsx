@@ -18,7 +18,7 @@ interface BetaInviteEmailProps {
   recipientName?: string;
 }
 
-const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
+export const BetaInviteEmail: React.FC<BetaInviteEmailProps> = ({
   recipientName = 'there',
 }) => {
   const downloadUrl = 'https://www.itracksy.com/download';

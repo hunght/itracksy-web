@@ -10,7 +10,7 @@ type ResendWebhookEvent = {
     to: string[];
     from: string;
     subject: string;
-    tags?: Record<string, string>;
+    tags?: { name: string; value: string }[]; 
     // For click events
     click?: {
       user_agent?: string;
@@ -41,20 +41,27 @@ export async function POST(request: NextRequest) {
     // Extract event type from the webhook type
     const eventType = type.replace('email.', '');
     
+    // Convert tags array to a more usable object
+    const tagsObject: Record<string, string> = {};
+    if (data.tags && Array.isArray(data.tags)) {
+      data.tags.forEach(tag => {
+        tagsObject[tag.name] = tag.value;
+      });
+    }
+    
     // Extract email type from tags if available
-    const emailType = data.tags?.email_type || 'unknown';
+    const emailType = tagsObject.email_type || 'unknown';
     
     // Create metadata object based on event type
-    let metadata: Record<string, any> = {};
+    let metadata: Record<string, any> = {
+      ...tagsObject,
+      timestamp: new Date().toISOString()
+    };
     
     if (type === 'email.clicked' && data.click) {
       metadata = {
-        ...data.click,
-        timestamp: new Date().toISOString()
-      };
-    } else {
-      metadata = {
-        timestamp: new Date().toISOString()
+        ...metadata,
+        ...data.click
       };
     }
     

@@ -84,11 +84,11 @@ await sendEmailWithRetry({
   to: recipientEmail,
   subject: 'Welcome to iTracksy!',
   react: WelcomeEmail({ userFirstName }),
-  tags: {
-    email_type: 'welcome',
-    recipient_email: recipientEmail,
-    recipient_name: userFirstName,
-  },
+  tags: [
+    { name: 'email_type', value: 'welcome' },
+    { name: 'recipient_email', value: recipientEmail },
+    { name: 'recipient_name', value: userFirstName }
+  ]
 });
 ```
 
