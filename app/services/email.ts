@@ -21,6 +21,7 @@ async function sendEmailWithRetry(
     to: string;
     subject: string;
     react: React.ReactNode;
+    tags?: { name: string; value: string }[];
   },
   maxRetries = 3,
   initialDelay = 1000,
@@ -59,6 +60,10 @@ export async function sendInactivityEmail(userEmail: string) {
       to: toEmail,
       subject: 'We miss you at iTracksy!',
       react: InactivityEmail({}),
+      tags: [
+        { name: 'email_type', value: 'inactivity' },
+        { name: 'recipient_email', value: toEmail },
+      ],
     });
 
     if (isDevelopment) {
@@ -78,6 +83,11 @@ export async function sendWelcomeEmail(
       to: toEmail,
       subject: 'Welcome to iTracksy!',
       react: WelcomeEmail({ userFirstName }),
+      tags: [
+        { name: 'email_type', value: 'welcome' },
+        { name: 'recipient_email', value: toEmail },
+        { name: 'recipient_name', value: userFirstName },
+      ],
     });
 
     if (isDevelopment) {
@@ -94,6 +104,10 @@ export async function sendProductUpdateEmail(userEmail: string) {
       to: toEmail,
       subject: 'Product Update',
       react: ProductUpdateEmail({}),
+      tags: [
+        { name: 'email_type', value: 'product_update' },
+        { name: 'recipient_email', value: toEmail },
+      ],
     });
   }
 }
@@ -105,6 +119,10 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
         to: userEmail,
         subject: 'Your iTracksy Login OTP',
         react: OTPEmail({ otp }),
+        tags: [
+          { name: 'email_type', value: 'otp' },
+          { name: 'recipient_email', value: userEmail },
+        ],
       });
     }
   } catch (emailError) {
@@ -128,6 +146,11 @@ export async function sendBetaInviteEmail({
         to: toEmail,
         subject: 'Exclusive Invitation: Join the iTracksy Beta!',
         react: BetaInviteEmail({ recipientName }),
+        tags: [
+          { name: 'email_type', value: 'beta_invite' },
+          { name: 'recipient_email', value: toEmail },
+          { name: 'recipient_name', value: recipientName || 'there' },
+        ],
       });
 
       if (isDevelopment) {
