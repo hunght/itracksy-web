@@ -10,7 +10,7 @@
     "start": "next start",
     "lint": "next lint",
     "shadcn": "pnpm dlx shadcn@latest add ",
-    "db": "supabase gen types typescript --project-id xigrnhxrexexsfrkmogd --schema public > lib/schema.ts",
+    "db": "supabase gen types typescript --project-id onrbhccgncgewwcpvzxs --schema public > lib/schema.ts",
     "clear": "rm -rf .next node_modules/.cache"
   },
   "dependencies": {

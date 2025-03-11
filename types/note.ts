@@ -1,4 +1,4 @@
-import { Database } from '@/lib/schema';
+import { Database } from '@/lib/supabase';
 
 export type NoteType = Database['public']['Tables']['notes']['Row'];
 export type NoteAllType = {

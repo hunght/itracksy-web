@@ -1,8 +1,8 @@
-import { Database } from '@/lib/schema';
 import { TypedSupabaseClient } from '@/types/supabase';
 import { createBrowserClient } from '@supabase/ssr';
 
 import { useMemo } from 'react';
+import { Database } from '../supabase';
 
 let client: TypedSupabaseClient | undefined;
 
