@@ -34,7 +34,7 @@ export function SiteHeader({ isLoginPage = false }: SiteHeaderProps) {
               Pricing
             </Link>
             <Link
-              href="/resources"
+              href="/blog"
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               Resources
