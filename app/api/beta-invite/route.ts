@@ -31,6 +31,35 @@ export async function POST(request: NextRequest) {
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
+    // check if email already sent to user
+    const { data: existingInvite } = await supabase
+      .from('beta_invites')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingInvite) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invite has already been sent to this email.',
+      });
+    }
+
+    // Send the invitation email
+    const emailResult = await sendBetaInviteEmail({
+      userEmail: email,
+      recipientName: name,
+    });
+
+    if (!emailResult?.success) {
+      // Even if email fails, we return success since the invite was created
+      return NextResponse.json({
+        success: true,
+
+        emailSent: false,
+        message: 'Beta invite created but email failed to send',
+      });
+    }
 
     // Store the invite in the database
     const { data: invite, error: inviteError } = await supabase
@@ -44,30 +73,6 @@ export async function POST(request: NextRequest) {
       })
       .select()
       .single();
-
-    if (inviteError) {
-      console.error('Failed to create beta invite:', inviteError);
-      return NextResponse.json(
-        { error: 'Failed to create beta invite' },
-        { status: 500 },
-      );
-    }
-
-    // Send the invitation email
-    const emailResult = await sendBetaInviteEmail({
-      userEmail: email,
-      recipientName: name,
-    });
-
-    if (!emailResult?.success) {
-      // Even if email fails, we return success since the invite was created
-      return NextResponse.json({
-        success: true,
-        invite,
-        emailSent: false,
-        message: 'Beta invite created but email failed to send',
-      });
-    }
 
     return NextResponse.json({
       success: true,
