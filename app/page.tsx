@@ -355,16 +355,19 @@ export default async function Home() {
                     <div className="absolute -left-4 -right-4 -top-4 bottom-4 z-0 rounded-full bg-amber-500"></div>
 
                     <div className="relative z-10">
-                      <Image
-                        src="/app-screenshot.png"
-                        alt="iTracksy time tracking application interface showing timer and project management features"
-                        width={600}
-                        height={400}
-                        className="rounded-lg border border-slate-200 shadow-xl"
-                        priority
-                        loading="eager"
-                        fetchPriority="high"
-                      />
+                      <div
+                        className="relative overflow-hidden rounded-lg border border-slate-200 shadow-xl"
+                        style={{ paddingBottom: '56.25%', height: 0 }}
+                      >
+                        <iframe
+                          src="https://www.youtube.com/embed/MG3s-c4Lxbo"
+                          title="iTracksy: Free Open-Source Time Tracking Application"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="absolute left-0 top-0 h-full w-full"
+                          loading="lazy"
+                        ></iframe>
+                      </div>
                     </div>
                   </div>
                 </div>
