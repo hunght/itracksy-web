@@ -7,7 +7,7 @@ export const siteConfig = {
   links: {
     twitter: 'https://twitter.com/buddy_beep_com',
     github: 'https://github.com/itracksy/itracksy',
-    discord: 'https://discord.gg/9vW4dzA6',
+    discord: 'https://discord.gg/BzQZpdZuM7',
   },
 };
 
