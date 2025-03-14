@@ -64,6 +64,18 @@ export function UploadLeadsModal() {
             values[dateIndex]?.trim() || new Date().toISOString();
           const submissionId = values[idIndex]?.trim() || '';
 
+          // Parse submission date, defaulting to current time if invalid
+          let parsedSubmissionTime: Date;
+          try {
+            parsedSubmissionTime = new Date(submissionDate);
+            // If the date is invalid, fall back to current time
+            if (isNaN(parsedSubmissionTime.getTime())) {
+              parsedSubmissionTime = new Date();
+            }
+          } catch {
+            parsedSubmissionTime = new Date();
+          }
+
           // Extract username from email to use as name
           const name = email.split('@')[0] || 'Unknown';
 
@@ -71,7 +83,8 @@ export function UploadLeadsModal() {
             name: name,
             email: email,
             phone: 'Not provided', // Default value
-            message: `Imported from CSV. Submission ID: ${submissionId}, Date: ${submissionDate}`, // Default with metadata
+            message: `Imported from CSV. Submission ID: ${submissionId}, Submission Time: ${parsedSubmissionTime.toISOString()}`, // Include parsed time
+            submission_time: parsedSubmissionTime.toISOString(), // Add explicit submission time field
           };
         })
         .filter((lead) => lead.email); // Only keep entries with email
