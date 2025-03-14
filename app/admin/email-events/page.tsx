@@ -101,7 +101,7 @@ export default function EmailEventsPage() {
       const params = new URLSearchParams();
 
       if (emailType && emailType !== 'all')
-        params.append('emailType', emailType);
+        params.append('emailType', emailType.toLowerCase());
       if (dateRange?.from)
         params.append('startDate', format(dateRange.from, 'yyyy-MM-dd'));
       if (dateRange?.to)
@@ -128,7 +128,7 @@ export default function EmailEventsPage() {
       const params = new URLSearchParams();
 
       if (emailType && emailType !== 'all')
-        params.append('emailType', emailType);
+        params.append('emailType', emailType.toLowerCase());
       if (dateRange?.from)
         params.append('startDate', format(dateRange.from, 'yyyy-MM-dd'));
       if (dateRange?.to)
