@@ -19,6 +19,7 @@ type Lead = {
   email: string;
   phone: string;
   message: string;
+  beta_invite_sent?: boolean;
 };
 
 export default function LeadsPage() {
@@ -30,20 +31,46 @@ export default function LeadsPage() {
     data: leadsList = [],
     isLoading,
     isError,
+    refetch,
   } = useQuery<Lead[]>({
     queryKey: ['leads'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all leads
+      const { data: leadsData, error: leadsError } = await supabase
         .from('leads')
         .select('*')
         .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as Lead[];
+      
+      if (leadsError) throw leadsError;
+      
+      // Get all beta invites to check which leads have been sent invites
+      const { data: betaInvites, error: invitesError } = await supabase
+        .from('beta_invites')
+        .select('email');
+        
+      if (invitesError) throw invitesError;
+      
+      // Create a set of emails that have been sent invites for faster lookup
+      const invitedEmails = new Set(betaInvites.map(invite => invite.email));
+      
+      // Mark leads that have already been sent invites
+      const leadsWithInviteStatus = leadsData.map(lead => ({
+        ...lead,
+        beta_invite_sent: invitedEmails.has(lead.email)
+      }));
+      
+      return leadsWithInviteStatus as Lead[];
     },
   });
 
   // Handle lead selection
   const toggleLeadSelection = (lead: Lead) => {
+    // Prevent selection of leads that have already been sent invites
+    if (lead.beta_invite_sent) {
+      toast.info(`${lead.name} has already been sent a beta invite`);
+      return;
+    }
+    
     if (selectedLeads.some((selected) => selected.id === lead.id)) {
       setSelectedLeads(
         selectedLeads.filter((selected) => selected.id !== lead.id),
@@ -55,10 +82,11 @@ export default function LeadsPage() {
 
   // Select/deselect all leads
   const toggleSelectAll = () => {
-    if (selectedLeads.length === leadsList.length) {
+    if (selectedLeads.length === leadsList.filter(lead => !lead.beta_invite_sent).length) {
       setSelectedLeads([]);
     } else {
-      setSelectedLeads([...leadsList]);
+      // Only select leads that haven't been sent invites
+      setSelectedLeads([...leadsList.filter(lead => !lead.beta_invite_sent)]);
     }
   };
 
@@ -87,6 +115,7 @@ export default function LeadsPage() {
             body: JSON.stringify({
               email: lead.email,
               name: lead.name,
+              leadId: lead.id, // Pass the lead ID to associate with the invite
               expiryDays: 14, // Two weeks expiry for leads
             }),
           });
@@ -114,6 +143,8 @@ export default function LeadsPage() {
       // Show summary toast
       if (successCount > 0) {
         toast.success(`Successfully sent ${successCount} beta invitations`);
+        // Refresh the leads list to update the invite status
+        refetch();
       }
 
       if (failedCount > 0) {
@@ -149,8 +180,8 @@ export default function LeadsPage() {
                   <Checkbox
                     id="selectAll"
                     checked={
-                      leadsList.length > 0 &&
-                      selectedLeads.length === leadsList.length
+                      leadsList.filter(lead => !lead.beta_invite_sent).length > 0 &&
+                      selectedLeads.length === leadsList.filter(lead => !lead.beta_invite_sent).length
                     }
                     onCheckedChange={toggleSelectAll}
                   />
@@ -160,7 +191,7 @@ export default function LeadsPage() {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-gray-500">
-                    {selectedLeads.length} of {leadsList.length} selected
+                    {selectedLeads.length} of {leadsList.filter(lead => !lead.beta_invite_sent).length} available selected
                   </span>
                   {selectedLeads.length > 0 && (
                     <Button
@@ -194,20 +225,23 @@ export default function LeadsPage() {
                       )}
                       onCheckedChange={() => toggleLeadSelection(lead)}
                       className="mr-3"
+                      disabled={lead.beta_invite_sent}
                     />
-                    <div className="grid flex-1 grid-cols-5 gap-4">
+                    <div className="grid flex-1 grid-cols-6 gap-4">
                       <span className="truncate font-semibold">
                         {lead.name}
                       </span>
-                      <span className="truncate text-sm text-gray-500">
-                        {lead.email}
+                      <span className="truncate">{lead.email}</span>
+                      <span className="truncate">{lead.phone}</span>
+                      <span className="col-span-2 truncate">
+                        {lead.message || 'No message'}
                       </span>
-                      <span className="truncate text-sm text-gray-500">
-                        {lead.phone}
-                      </span>
-                      <span className="truncate text-sm">{lead.message}</span>
-                      <span className="text-xs text-gray-400">
-                        {new Date(lead.created_at).toLocaleDateString()}
+                      <span className="text-right">
+                        {lead.beta_invite_sent ? (
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                            Invite Sent
+                          </span>
+                        ) : null}
                       </span>
                     </div>
                   </li>
