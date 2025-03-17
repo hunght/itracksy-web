@@ -14,8 +14,8 @@ export const buildAppLinks = (version: string) => ({
   releases: `https://github.com/itracksy/itracksy/releases/tag/v${version}`,
 
   // You can add other platform-specific links if needed
-  macosIntel: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy-${version}-arm64.dmg`,
-  linuxRpm: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy-${version}.x86_64.rpm`,
+  macosIntel: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy-${version}-x64.dmg`,
+  linuxRpm: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy-${version}-1.x86_64.rpm`,
 });
 
 // Client-side version getter that uses the API
