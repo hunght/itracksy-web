@@ -6,6 +6,7 @@ import { FaWindows, FaApple, FaLinux, FaDownload } from 'react-icons/fa';
 import Link from 'next/link';
 import { handleDownload, getPlatformDownloadUrl } from '@/utils/handleDownload';
 import { useAppVersion } from '@/hooks/use-app-version';
+import Image from 'next/image';
 
 const DownloadPage = () => {
   const { links, loading, version } = useAppVersion();
@@ -36,7 +37,12 @@ const DownloadPage = () => {
       const url = getPlatformDownloadUrl(links);
       setDownloadUrl(url);
 
-      // Start countdown for auto-download
+      // Skip countdown for macOS as we need user to select architecture
+      if (os === 'mac') {
+        return;
+      }
+
+      // Start countdown for auto-download for non-macOS platforms
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -51,7 +57,7 @@ const DownloadPage = () => {
 
       return () => clearInterval(timer);
     }
-  }, [loading, links]);
+  }, [loading, links, os]);
 
   const initiateDownload = () => {
     if (downloadStarted) return;
@@ -86,14 +92,16 @@ const DownloadPage = () => {
     }
   };
 
-  const getDownloadFileName = () => {
+  const getDownloadFileName = (macArch?: string) => {
     if (!version) return '';
 
     switch (os) {
       case 'windows':
         return `itracksy-${version}.Setup.exe`;
       case 'mac':
-        return `itracksy-${version}-arm64.dmg`;
+        return macArch === 'intel'
+          ? `itracksy-${version}.dmg`
+          : `itracksy-${version}-arm64.dmg`;
       case 'linux':
         return `itracksy_${version}_amd64.deb`;
       default:
@@ -101,11 +109,16 @@ const DownloadPage = () => {
     }
   };
 
-  const handlePlatformDownload = (platform: string) => {
+  const handlePlatformDownload = (platform: string, macArch?: string) => {
     if (platform === 'windows') {
       window.location.href = links.windows;
     } else if (platform === 'mac') {
-      window.location.href = links.macos;
+      // If macArch is specified, use the appropriate URL
+      if (macArch === 'intel' && links.macosIntel) {
+        window.location.href = links.macosIntel;
+      } else {
+        window.location.href = links.macos; // Default to ARM
+      }
     } else if (platform === 'linux') {
       window.location.href = links.linux;
     } else {
@@ -123,9 +136,11 @@ const DownloadPage = () => {
         className="w-full max-w-3xl rounded-2xl bg-white p-8 shadow-xl md:p-12"
       >
         <div className="mb-8 text-center">
-          <img
+          <Image
             src="/icon-300.png"
             alt="iTracksy Logo"
+            width={120}
+            height={120}
             className="mx-auto mb-6 h-24 w-24"
           />
           <h1 className="mb-2 text-3xl font-bold text-gray-800 md:text-4xl">
@@ -169,18 +184,44 @@ const DownloadPage = () => {
                 </div>
               ) : (
                 <div>
-                  <p className="mb-4">
-                    Your download will begin automatically in{' '}
-                    <span className="font-bold">{countdown}</span> seconds
-                  </p>
-                  <button
-                    onClick={initiateDownload}
-                    className="mx-auto flex items-center justify-center rounded-lg bg-purple-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-purple-700"
-                  >
-                    <FaDownload className="mr-2" />
-                    Download Now{' '}
-                    {getDownloadFileName() && `(${getDownloadFileName()})`}
-                  </button>
+                  {os === 'mac' ? (
+                    <div className="mb-4">
+                      <p className="mb-3 text-sm">
+                        Please select your Mac type:
+                      </p>
+                      <div className="flex justify-center space-x-4">
+                        <button
+                          onClick={() => handlePlatformDownload('mac', 'arm')}
+                          className="flex items-center justify-center rounded-lg bg-purple-600 px-6 py-2 font-medium text-white transition duration-300 hover:bg-purple-700"
+                        >
+                          <FaApple className="mr-2" />
+                          Mac with Apple Silicon
+                        </button>
+                        <button
+                          onClick={() => handlePlatformDownload('mac', 'intel')}
+                          className="flex items-center justify-center rounded-lg bg-purple-600 px-6 py-2 font-medium text-white transition duration-300 hover:bg-purple-700"
+                        >
+                          <FaApple className="mr-2" />
+                          Mac with Intel Chip
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="mb-4">
+                        Your download will begin automatically in{' '}
+                        <span className="font-bold">{countdown}</span> seconds
+                      </p>
+                      <button
+                        onClick={initiateDownload}
+                        className="mx-auto flex items-center justify-center rounded-lg bg-purple-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-purple-700"
+                      >
+                        <FaDownload className="mr-2" />
+                        Download Now{' '}
+                        {getDownloadFileName() && `(${getDownloadFileName()})`}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -199,12 +240,21 @@ const DownloadPage = () => {
               <div className="rounded-lg bg-gray-50 p-4 text-center">
                 <FaApple className="mx-auto mb-2 text-2xl text-gray-700" />
                 <p className="font-medium">macOS</p>
-                <button
-                  onClick={() => handlePlatformDownload('mac')}
-                  className="mt-1 text-sm text-purple-600 underline hover:text-purple-800"
-                >
-                  Download
-                </button>
+                <div className="mt-1 flex justify-center space-x-2 text-sm">
+                  <button
+                    onClick={() => handlePlatformDownload('mac', 'arm')}
+                    className="text-purple-600 underline hover:text-purple-800"
+                  >
+                    Apple Silicon
+                  </button>
+                  <span className="text-gray-400">|</span>
+                  <button
+                    onClick={() => handlePlatformDownload('mac', 'intel')}
+                    className="text-purple-600 underline hover:text-purple-800"
+                  >
+                    Intel
+                  </button>
+                </div>
               </div>
               <div className="rounded-lg bg-gray-50 p-4 text-center">
                 <FaLinux className="mx-auto mb-2 text-2xl text-gray-700" />
