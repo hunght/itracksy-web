@@ -5,12 +5,10 @@ import { handleDownload } from '@/utils/handleDownload';
 import { MouseEventHandler } from 'react';
 
 export function DownloadButton() {
-  const { links, loading } = useAppVersion();
-
   const handleClick: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     // Use the dynamically fetched links
-    handleDownload(links);
+    handleDownload();
   };
   return (
     <button

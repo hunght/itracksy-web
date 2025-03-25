@@ -1,15 +1,18 @@
-import { appLinks as defaultAppLinks } from '@/config/app-links';
-
 // Allow passing custom app links or fallback to default
-export const handleDownload = (customAppLinks = defaultAppLinks) => {
+export const handleDownload = () => {
   //let go to the download page domain/download
   window.location.href = '/download';
 };
 
 // Export a function to get platform-specific download URL without triggering download
-export const getPlatformDownloadUrl = (
-  customAppLinks = defaultAppLinks,
-): string => {
+export const getPlatformDownloadUrl = (customAppLinks: {
+  windows: string;
+  macos: string;
+  linux: string;
+  releases: string;
+  macosIntel: string;
+  linuxRpm: string;
+}): string => {
   // For server-side rendering, return the releases page
   if (typeof window === 'undefined') {
     return customAppLinks.releases;

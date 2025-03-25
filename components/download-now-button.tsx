@@ -30,7 +30,7 @@ export function DownloadNowButton({
   const handleClick: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.preventDefault();
     // Use the dynamically fetched links
-    handleDownload(links);
+    handleDownload();
   };
 
   return (
