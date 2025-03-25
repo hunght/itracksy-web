@@ -4,8 +4,7 @@ import { PostItem } from '@/components/post-item';
 import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+
 import { JsonLd } from 'react-schemaorg';
 import { WebSite, SoftwareApplication, VideoObject } from 'schema-dts';
 import Image from 'next/image';

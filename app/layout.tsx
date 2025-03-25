@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   title: siteConfig.name,
   description: siteConfig.description,
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? siteConfig.url),
-  manifest: '/manifest.json',
   themeColor: '#000000',
   icons: {
     icon: '/favicon.ico',
