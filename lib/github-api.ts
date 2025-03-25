@@ -42,7 +42,6 @@ export async function getLatestRelease(): Promise<GitHubRelease | null> {
           // Add GitHub token as Authorization if you have rate limit issues
           // 'Authorization': `token ${process.env.GITHUB_TOKEN}`
         },
-        next: { revalidate: 3600 }, // Revalidate cache every hour (for Next.js fetch)
       },
     );
 
