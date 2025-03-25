@@ -1,6 +1,5 @@
 'use client';
 
-import { useAppVersion } from '@/hooks/use-app-version';
 import { handleDownload } from '@/utils/handleDownload';
 import { MouseEventHandler } from 'react';
 
