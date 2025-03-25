@@ -11,7 +11,7 @@ export const buildAppLinks = (version: string) => ({
   linux: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy_${version}_amd64.deb`,
 
   // Additional links
-  releases: `https://github.com/itracksy/itracksy/releases/tag/v${version}`,
+  releases: `https://github.com/itracksy/itracksy/releases`,
 
   // You can add other platform-specific links if needed
   macosIntel: `https://github.com/itracksy/itracksy/releases/download/v${version}/itracksy-${version}-x64.dmg`,
