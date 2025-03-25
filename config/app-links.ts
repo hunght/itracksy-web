@@ -1,8 +1,5 @@
 // Configuration file for application download links and version information
 
-// Fallback version in case API fetch fails
-export const fallbackVersion = '1.0.138';
-
 // Function to build download URLs based on a version
 export const buildAppLinks = (version: string) => ({
   // Main platform download links
@@ -20,26 +17,20 @@ export const buildAppLinks = (version: string) => ({
 
 // Client-side version getter that uses the API
 export async function getLatestVersionFromApi(): Promise<string> {
-  try {
-    // Only run on client
-    if (typeof window === 'undefined') {
-      return fallbackVersion;
-    }
+  const response = await fetch(
+    'https://api.github.com/repos/itracksy/itracksy/releases/latest',
+  );
 
-    const response = await fetch('/api/latest-version');
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch latest version');
-    }
-
-    const data = await response.json();
-    return data.version;
-  } catch (error) {
-    console.warn('Failed to get latest version, using fallback:', error);
-    return fallbackVersion;
+  if (!response.ok) {
+    throw {
+      status: 'error',
+      message: 'Failed to check for updates. Please try again later.',
+      hasUpdate: false,
+    };
   }
-}
 
-// Default export uses the fallback version
-export const appVersion = fallbackVersion;
-export const appLinks = buildAppLinks(fallbackVersion);
+  const release = await response.json();
+  const latestVersion = release.tag_name.replace('v', '');
+
+  return latestVersion;
+}

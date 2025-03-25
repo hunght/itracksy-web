@@ -1,12 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  getLatestVersionFromApi,
-  buildAppLinks,
-  fallbackVersion,
-} from '@/config/app-links';
-
+import { getLatestVersionFromApi, buildAppLinks } from '@/config/app-links';
+const fallbackVersion = 'v1.0.163';
 export function useAppVersion() {
   const [version, setVersion] = useState(fallbackVersion);
   const [links, setLinks] = useState(buildAppLinks(fallbackVersion));
