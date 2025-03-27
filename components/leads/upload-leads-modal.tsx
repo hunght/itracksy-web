@@ -20,7 +20,28 @@ export function UploadLeadsModal() {
 
   const { mutate: uploadLeads, isPending: isUploading } = useMutation({
     mutationFn: async (leads: Lead[]) => {
-      const { error } = await supabase.from('leads').upsert(leads, {
+      // Deduplicate leads by email, keeping the most recent submission
+      const emailMap = new Map<string, Lead>();
+
+      leads.forEach((lead) => {
+        const existingLead = emailMap.get(lead.email);
+
+        // If this email doesn't exist in map yet, or if current lead is more recent, add it
+        if (
+          !existingLead ||
+          (lead.submission_time &&
+            existingLead.submission_time &&
+            new Date(lead.submission_time) >
+              new Date(existingLead.submission_time))
+        ) {
+          emailMap.set(lead.email, lead);
+        }
+      });
+
+      // Convert map back to array
+      const uniqueLeads = Array.from(emailMap.values());
+
+      const { error } = await supabase.from('leads').upsert(uniqueLeads, {
         onConflict: 'email',
         ignoreDuplicates: false, // Update existing records
       });
