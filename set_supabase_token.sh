@@ -19,7 +19,7 @@ export_supabase_token() {
 
     # Export the token to environment variables
     export SUPABASE_ACCESS_TOKEN="$ACCESS_TOKEN"
-    supabase link --project-ref onrbhccgncgewwcpvzxs
+
     supabase gen types typescript --project-id onrbhccgncgewwcpvzxs --schema public > lib/supabase.ts
 }
 

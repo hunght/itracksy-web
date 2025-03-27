@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
+import { Lead } from '@/types/supabase';
 
 export function UploadLeadsModal() {
   const [open, setOpen] = useState(false);
@@ -18,8 +19,11 @@ export function UploadLeadsModal() {
   const supabase = useSupabaseBrowser();
 
   const { mutate: uploadLeads, isPending: isUploading } = useMutation({
-    mutationFn: async (leads: any[]) => {
-      const { error } = await supabase.from('leads').insert(leads);
+    mutationFn: async (leads: Lead[]) => {
+      const { error } = await supabase.from('leads').upsert(leads, {
+        onConflict: 'email',
+        ignoreDuplicates: false, // Update existing records
+      });
       if (error) throw error;
     },
   });
