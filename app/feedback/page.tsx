@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { siteConfig } from '@/config/site'; // Import siteConfig
 
 import { Button } from '@/components/ui/button';
@@ -44,22 +44,6 @@ export default function FeedbackPage() {
 
   const supabase = useSupabaseBrowser();
   const queryClient = useQueryClient();
-  // Query for fetching feedback
-  const {
-    data: feedbackList = [],
-    isLoading,
-    isError,
-  } = useQuery<Feedback[]>({
-    queryKey: ['feedback'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as Feedback[];
-    },
-  });
 
   // Mutation for submitting feedback
   const { mutate: submitFeedback, isPending: isSubmitting } = useMutation({
@@ -81,8 +65,7 @@ export default function FeedbackPage() {
           setEmail('');
           setFeedbackType('');
           setMessage('');
-          // Invalidate and refetch the feedback query
-          queryClient.invalidateQueries({ queryKey: ['feedback'] });
+          // No need to invalidate queries since we're not displaying feedback
           toast({
             title: 'Feedback Submitted',
             description: 'Thank you for your feedback!',
@@ -103,7 +86,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <Card className="mx-auto mb-10 max-w-2xl">
+      <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle>Feedback</CardTitle>
           <CardDescription>
@@ -181,34 +164,6 @@ export default function FeedbackPage() {
             </Button>
           </CardFooter>
         </form>
-      </Card>
-
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader>
-          <CardTitle>Submitted Feedback</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {feedbackList.length === 0 ? (
-            <p>No feedback submitted yet.</p>
-          ) : (
-            <ul className="space-y-4">
-              {feedbackList.map((feedback) => (
-                <li key={feedback.id} className="border-b pb-4">
-                  <h3 className="font-semibold">{feedback.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    {new Date(feedback.created_at).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-gray-500">{feedback.email}</p>
-                  <p className="mt-1">
-                    <span className="font-medium">Type:</span>{' '}
-                    {feedback.feedback_type}
-                  </p>
-                  <p className="mt-1">{feedback.message}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
       </Card>
     </div>
   );
