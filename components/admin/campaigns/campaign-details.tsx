@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { Campaign } from '@/types/campaigns';
-import { Tables } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
@@ -19,6 +18,23 @@ interface CampaignDetailsProps {
   onUpdate: (campaign: Campaign) => void;
 }
 
+// Define a simplified type for campaign leads to avoid deep nesting
+interface CampaignLeadWithLead {
+  id: string;
+  campaign_id: string;
+  lead_id: string;
+  status: string | null;
+  sent_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  lead: {
+    id: string;
+    name: string;
+    email: string;
+    created_at: string;
+  };
+}
+
 export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
   const [activeTab, setActiveTab] = useState('details');
   const queryClient = useQueryClient();
@@ -29,13 +45,21 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('campaign_leads')
-        .select('*, lead:leads(*)')
+        .select(
+          `
+          id, campaign_id, lead_id, status, sent_at, opened_at, clicked_at,
+          lead:leads(id, name, email, created_at)
+        `,
+        )
         .eq('campaign_id', campaign.id);
 
       if (error) throw error;
-      return data;
+      return data as CampaignLeadWithLead[];
     },
   });
+
+  // Extract just the leads for the SendCampaignModal
+  const leadsForCampaign = campaignLeads?.map((cl) => cl.lead) || [];
 
   const { mutate: updateCampaignStatus, isPending: isUpdating } = useMutation({
     mutationFn: async (status: string) => {
@@ -80,7 +104,7 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
               <AddLeadsToCampaignModal campaign={campaign} />
               <SendCampaignModal
                 campaign={campaign}
-                leads={campaignLeads?.map((cl) => cl.lead) as Tables<'leads'>[]}
+                leads={leadsForCampaign}
                 onSent={(updatedCampaign) => onUpdate(updatedCampaign)}
               />
             </>
@@ -180,12 +204,16 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
                 {campaignLeads.map((campaignLead) => (
                   <div key={campaignLead.id} className="rounded-md border p-3">
                     <div className="flex justify-between">
-                      <h4 className="font-medium">{campaignLead.lead.name}</h4>
+                      <h4 className="font-medium">
+                        {campaignLead.lead?.name || 'Unknown'}
+                      </h4>
                       <Badge variant="outline" className="ml-2">
                         {campaignLead.status || 'Pending'}
                       </Badge>
                     </div>
-                    <p className="text-sm">{campaignLead.lead.email}</p>
+                    <p className="text-sm">
+                      {campaignLead.lead?.email || 'No email'}
+                    </p>
                     {campaignLead.sent_at && (
                       <p className="mt-1 text-xs text-muted-foreground">
                         Sent: {new Date(campaignLead.sent_at).toLocaleString()}

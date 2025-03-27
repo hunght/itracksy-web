@@ -15,11 +15,17 @@ import {
 import { toast } from '@/components/ui/use-toast';
 import { Loader2, Mail } from 'lucide-react';
 import { Campaign } from '@/types/campaigns';
-import { Tables } from '@/lib/supabase';
+
+// Simplified lead type to avoid deep nesting
+interface CampaignLead {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface SendCampaignModalProps {
   campaign: Campaign;
-  leads: Tables<'leads'>[];
+  leads: CampaignLead[];
   onSent: (campaign: Campaign) => void;
 }
 
