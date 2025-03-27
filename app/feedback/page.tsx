@@ -113,7 +113,6 @@ export default function FeedbackPage() {
                 placeholder="Your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
               />
             </div>
             <div className="space-y-2">
