@@ -82,7 +82,7 @@ export async function sendWelcomeEmail(
     await sendEmailWithRetry({
       to: toEmail,
       subject: 'Welcome to iTracksy!',
-      react: WelcomeEmail({ userFirstName }),
+      react: WelcomeEmail({ name: userFirstName }),
       tags: [
         { name: 'email_type', value: 'welcome' },
         { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
