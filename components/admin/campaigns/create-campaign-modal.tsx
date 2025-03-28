@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { Campaign } from '@/types/campaigns';
 
+// Keep the schema for type definition but we won't use it for validation
 const campaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
   description: z.string().min(1, 'Campaign description is required'),
@@ -48,7 +48,6 @@ export function CreateCampaignModal({
   const supabase = useSupabaseBrowser();
 
   const form = useForm<CampaignForm>({
-    resolver: zodResolver(campaignSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -57,6 +56,42 @@ export function CreateCampaignModal({
         'Hi {{name}},\n\nWe thought you might be interested in...\n\nBest regards,\nThe iTRACKsy Team',
     },
   });
+
+  // Custom validation function
+  const validateForm = (data: CampaignForm) => {
+    const errors: Partial<Record<keyof CampaignForm, string>> = {};
+
+    if (!data.name) {
+      errors.name = 'Campaign name is required';
+      form.setError('name', { type: 'manual', message: errors.name });
+    }
+
+    if (!data.description) {
+      errors.description = 'Campaign description is required';
+      form.setError('description', {
+        type: 'manual',
+        message: errors.description,
+      });
+    }
+
+    if (!data.email_subject) {
+      errors.email_subject = 'Email subject is required';
+      form.setError('email_subject', {
+        type: 'manual',
+        message: errors.email_subject,
+      });
+    }
+
+    if (!data.email_template) {
+      errors.email_template = 'Email template is required';
+      form.setError('email_template', {
+        type: 'manual',
+        message: errors.email_template,
+      });
+    }
+
+    return Object.keys(errors).length === 0;
+  };
 
   const { mutate: createCampaign, isPending } = useMutation({
     mutationFn: async (data: CampaignForm) => {
@@ -96,7 +131,9 @@ export function CreateCampaignModal({
   });
 
   function onSubmit(data: CampaignForm) {
-    createCampaign(data);
+    if (validateForm(data)) {
+      createCampaign(data);
+    }
   }
 
   return (
@@ -170,8 +207,8 @@ export function CreateCampaignModal({
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
-                    Use {{ name }} and {{ email }} as placeholders that will be
-                    replaced with lead data.
+                    {`Use {{ name }} and {{ email }} as placeholders that will be
+                    replaced with lead data.`}
                   </p>
                 </FormItem>
               )}
