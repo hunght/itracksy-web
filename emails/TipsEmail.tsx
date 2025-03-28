@@ -21,6 +21,7 @@ interface TipsEmailProps {
 export const TipsEmail: React.FC<TipsEmailProps> = ({ name = 'there' }) => {
   const feedbackFormUrl = 'https://www.itracksy.com/feedback';
   const discordUrl = siteConfig.links.discord;
+  const downloadAppUrl = 'https://www.itracksy.com/download';
 
   return (
     <Html>
@@ -95,6 +96,10 @@ export const TipsEmail: React.FC<TipsEmailProps> = ({ name = 'there' }) => {
             better. And yes, we are really happy to have your feedbacks or
             participation in the development 💌
           </Text>
+
+          <Button style={btn} href={downloadAppUrl}>
+            Download iTracksy App
+          </Button>
 
           <Section style={buttonContainer}>
             <Button style={secondaryBtn} href={feedbackFormUrl}>
