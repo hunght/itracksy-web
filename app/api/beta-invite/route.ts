@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseClient } from '@/lib/supabase/server';
 import { sendBetaInviteEmail } from '@/app/services/email';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = createSupabaseClient();
 
     // Check authentication
     const {

@@ -2,13 +2,13 @@
 
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseClient } from '@/lib/supabase/server';
 import { identifyUser, resetUser } from '@/lib/posthog';
 
 export const signIn = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const supabase = createClient();
+  const supabase = createSupabaseClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -33,7 +33,7 @@ export const signIn = async (formData: FormData) => {
 export const signUp = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const supabase = createClient();
+  const supabase = createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
   const siteUrl = headers().get('origin');
@@ -54,7 +54,7 @@ export const signUp = async (formData: FormData) => {
 };
 
 export async function loginWithGoogle() {
-  const supabase = createClient();
+  const supabase = createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
   const siteUrl = headers().get('origin');
@@ -82,7 +82,7 @@ export async function loginWithGoogle() {
 
 export const loginWithOTP = async (formData: FormData) => {
   const email = formData.get('email') as string;
-  const supabase = createClient();
+  const supabase = createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
   const siteUrl = headers().get('origin');

@@ -1,9 +1,9 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseClient } from '@/lib/supabase/server';
 
 export async function verifyOTP(email: string, otp: string) {
-  const supabase = createClient();
+  const supabase = createSupabaseClient();
 
   const { data, error } = await supabase.auth.verifyOtp({
     email,

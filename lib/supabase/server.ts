@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '../supabase';
 
-export function createClient() {
+export function createSupabaseClient() {
   const cookieStore = cookies();
 
   // Create a server's supabase client with newly configured cookie,
@@ -44,16 +44,5 @@ export function createClient() {
 }
 
 export function createAdminClient() {
-  const cookieStore = cookies();
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SERVICE_ROLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    },
-  );
+  return createSupabaseClient();
 }
