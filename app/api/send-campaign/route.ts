@@ -4,6 +4,7 @@ import { Resend } from 'resend';
 import { WelcomeEmail } from '@/emails/WelcomeEmail';
 import { NewsletterEmail } from '@/emails/NewsletterEmail';
 import { BetaInviteEmail } from '@/emails/BetaInviteEmail';
+import TipsEmail from '@/emails/TipsEmail';
 
 // Import other email templates
 
@@ -15,7 +16,7 @@ const TIME_WINDOW_MINUTES = 90; // Send emails within 90 minutes of submission_t
 const EMAIL_TEMPLATES = {
   welcome: WelcomeEmail,
   newsletter: NewsletterEmail,
-  betaInviteEmail: BetaInviteEmail,
+  betaInviteEmail: TipsEmail,
 } as const;
 
 type TemplateType = keyof typeof EMAIL_TEMPLATES;
