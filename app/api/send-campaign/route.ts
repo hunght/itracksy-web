@@ -1,8 +1,9 @@
-import { createSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient, createSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { WelcomeEmail } from '@/emails/WelcomeEmail';
 import { NewsletterEmail } from '@/emails/NewsletterEmail';
+import { BetaInviteEmail } from '@/emails/BetaInviteEmail';
 
 // Import other email templates
 
@@ -14,20 +15,25 @@ const TIME_WINDOW_MINUTES = 90; // Send emails within 90 minutes of submission_t
 const EMAIL_TEMPLATES = {
   welcome: WelcomeEmail,
   newsletter: NewsletterEmail,
+  betaInviteEmail: BetaInviteEmail,
 } as const;
 
 type TemplateType = keyof typeof EMAIL_TEMPLATES;
 
+// Add development check constant
+const isDevelopment = process.env.NODE_ENV === 'development';
+const DEV_EMAIL = 'hth321@gmail.com';
+
 export async function POST(request: Request) {
   try {
     // Initialize Supabase client
-    const supabase = createSupabaseClient();
+    const supabase = createAdminClient();
 
     // Get all pending campaigns
     const { data: campaigns, error: campaignsError } = await supabase
       .from('marketing_campaigns')
       .select('*')
-      .eq('status', 'draft');
+      .eq('status', 'active');
 
     if (campaignsError) {
       console.error('Error fetching campaigns:', campaignsError);
@@ -36,7 +42,9 @@ export async function POST(request: Request) {
         { status: 500 },
       );
     }
+    console.log('Campaigns:', campaigns);
 
+    console.log(`Number of campaigns fetched: ${campaigns.length}`);
     for (const campaign of campaigns) {
       // Get pending leads that are within the time window of their submission_time
       const now = new Date();
@@ -58,13 +66,32 @@ export async function POST(request: Request) {
           if (!campaignLead.lead?.submission_time) return false;
 
           const submissionTime = new Date(campaignLead.lead.submission_time);
-          const timeDiff = Math.abs(now.getTime() - submissionTime.getTime());
-          const minutesDiff = timeDiff / (1000 * 60); // Convert to minutes
 
-          return minutesDiff <= TIME_WINDOW_MINUTES;
+          // Calculate time difference considering only hours, minutes, and seconds
+          const nowTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+          const submissionTimeInMinutes =
+            submissionTime.getHours() * 60 + submissionTime.getMinutes();
+
+          // Calculate difference in minutes, accounting for time wraparound (24-hour cycle)
+          let timeDiffMinutes = Math.abs(
+            nowTimeInMinutes - submissionTimeInMinutes,
+          );
+
+          // Handle cases where times cross midnight
+          if (timeDiffMinutes > 12 * 60) {
+            timeDiffMinutes = 24 * 60 - timeDiffMinutes;
+          }
+
+          console.log(
+            `Time difference for lead ${campaignLead.lead.id}: ${timeDiffMinutes} minutes`,
+          );
+          return timeDiffMinutes <= TIME_WINDOW_MINUTES;
         })
         .slice(0, BATCH_SIZE);
-
+      console.log(
+        `Number of leads to process for campaign ${campaign.id}: ${leadsToProcess?.length} leads campaignLeads ${campaignLeads?.length}`,
+      );
+      // Process each lead
       for (const campaignLead of leadsToProcess || []) {
         try {
           if (!campaignLead.lead) {
@@ -75,8 +102,10 @@ export async function POST(request: Request) {
           const { data: emailData, error: emailError } =
             await resend.emails.send({
               from: 'ITrackSy <noreply@itracksy.com>',
-              to: campaignLead.lead.email,
-              subject: campaign.email_subject,
+              to: isDevelopment ? DEV_EMAIL : campaignLead.lead.email,
+              subject: isDevelopment
+                ? `[TEST] ${campaign.email_subject}`
+                : campaign.email_subject,
               react: EMAIL_TEMPLATES[campaign.email_template as TemplateType]({
                 name: campaignLead.lead.name,
               }),
@@ -106,6 +135,10 @@ export async function POST(request: Request) {
           );
         } catch (error) {
           console.error('Error processing campaign lead:', error);
+        }
+        if (isDevelopment) {
+          console.log('In development mode, stop after processing one lead');
+          return NextResponse.json({ success: true });
         }
       }
 
