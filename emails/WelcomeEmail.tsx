@@ -12,12 +12,10 @@ import {
 import * as React from 'react';
 
 interface WelcomeEmailProps {
-  userFirstName: string;
+  name: string;
 }
 
-export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
-  userFirstName,
-}) => (
+export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => (
   <Html>
     <Head />
     <Preview>Welcome to iTracksy!</Preview>
@@ -31,7 +29,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({
           style={logo}
         />
         <Heading style={h1}>Welcome to iTracksy!</Heading>
-        <Text style={text}>Hello {userFirstName},</Text>
+        <Text style={text}>Hello {name},</Text>
         <Text style={text}>
           {`We're excited to have you on board. iTracksy is here to help you
           connect and collaborate.`}

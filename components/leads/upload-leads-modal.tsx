@@ -40,7 +40,7 @@ export function UploadLeadsModal() {
 
       // Convert map back to array
       const uniqueLeads = Array.from(emailMap.values());
-
+      console.log('uniqueLeads', uniqueLeads);
       const { error } = await supabase.from('leads').upsert(uniqueLeads, {
         onConflict: 'email',
         ignoreDuplicates: false, // Update existing records

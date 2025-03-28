@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
-import { Campaign } from '@/types/campaigns';
+import { Campaign, CampaignLead } from '@/types/campaigns';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
@@ -54,12 +54,13 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
         .eq('campaign_id', campaign.id);
 
       if (error) throw error;
-      return data as CampaignLeadWithLead[];
+      return data;
     },
   });
 
   // Extract just the leads for the SendCampaignModal
-  const leadsForCampaign = campaignLeads?.map((cl) => cl.lead) || [];
+  const leadsForCampaign =
+    campaignLeads?.map((cl) => cl.lead).filter((lead) => lead !== null) || [];
 
   const { mutate: updateCampaignStatus, isPending: isUpdating } = useMutation({
     mutationFn: async (status: string) => {
