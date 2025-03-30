@@ -1,22 +1,6 @@
-export interface Campaign {
-  id: string;
-  name: string;
-  description: string;
-  email_subject: string;
-  email_template: string;
-  status: 'draft' | 'active' | 'completed' | 'failed';
-  created_at: string;
-  updated_at: string;
-  sent_at?: string | null;
-}
+import { Database } from '@/lib/supabase';
 
-export interface CampaignLead {
-  id: string;
-  campaign_id: string;
-  lead_id: string;
-  status: 'pending' | 'sent' | 'opened' | 'clicked' | 'bounced' | 'failed';
-  created_at: string;
-  sent_at?: string | null;
-  opened_at?: string | null;
-  clicked_at?: string | null;
-}
+export type Campaign =
+  Database['public']['Tables']['marketing_campaigns']['Row'];
+export type CampaignLead =
+  Database['public']['Tables']['campaign_leads']['Insert'];

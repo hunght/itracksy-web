@@ -57,3 +57,6 @@ export function createAdminClient() {
     },
   );
 }
+
+export type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>;
+export type TypedAdminSupabaseClient = ReturnType<typeof createAdminClient>;
