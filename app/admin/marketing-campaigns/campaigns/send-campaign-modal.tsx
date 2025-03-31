@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSupabaseBrowser } from '@/lib/supabase/client';
+import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,8 +12,10 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
-import { Loader2, Mail } from 'lucide-react';
+import { Loader2, Send } from 'lucide-react';
 import { Campaign } from '@/types/campaigns';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 // Simplified lead type to avoid deep nesting
 interface CampaignLead {
@@ -35,59 +36,36 @@ export function SendCampaignModal({
   onSent,
 }: SendCampaignModalProps) {
   const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const supabase = useSupabaseBrowser();
+  const [testEmail, setTestEmail] = useState('');
 
-  const { mutate: sendCampaign, isPending } = useMutation({
+  const { mutate: sendTestEmail, isPending } = useMutation({
     mutationFn: async () => {
-      // In a real implementation, this would call an API endpoint that sends emails
-      // For now, we'll just simulate it by updating the campaign and campaign_leads status
+      if (!testEmail || !testEmail.includes('@')) {
+        throw new Error('Please enter a valid email address');
+      }
 
-      // Update campaign status
-      const { data: updatedCampaign, error: campaignError } = await supabase
-        .from('marketing_campaigns')
-        .update({ status: 'active', sent_at: new Date().toISOString() })
-        .eq('id', campaign.id)
-        .select('*')
-        .single();
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (campaignError) throw campaignError;
+      // Simulate sending test email
+      console.log(`Sending test email to: ${testEmail}`);
+      console.log(`Subject: ${campaign.email_subject}`);
+      console.log(`Template: ${campaign.email_template}`);
 
-      // Update campaign_leads status
-      const { error: leadsError } = await supabase
-        .from('campaign_leads')
-        .update({
-          status: 'sent',
-          sent_at: new Date().toISOString(),
-        })
-        .eq('campaign_id', campaign.id);
-
-      if (leadsError) throw leadsError;
-
-      // In a real implementation, you would:
-      // 1. Call a serverless function or API endpoint
-      // 2. That endpoint would process the campaign and send emails to each lead
-      // 3. It would update the campaign and lead statuses accordingly
-
-      return updatedCampaign as Campaign;
+      return { success: true, recipient: testEmail };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['campaigns'] });
-      queryClient.invalidateQueries({
-        queryKey: ['campaign-leads', campaign.id],
-      });
-      setOpen(false);
-      onSent(data);
       toast({
-        title: 'Campaign Sent',
-        description: `Successfully sent campaign "${campaign.name}" to ${leads.length} leads`,
+        title: 'Test Email Sent',
+        description: `Successfully sent test email to ${data.recipient}`,
       });
     },
     onError: (error) => {
-      console.error('Error sending campaign:', error);
+      console.error('Error sending test email:', error);
       toast({
         title: 'Error',
-        description: 'Failed to send campaign. Please try again.',
+        description:
+          error instanceof Error ? error.message : 'Failed to send test email',
         variant: 'destructive',
       });
     },
@@ -101,16 +79,15 @@ export function SendCampaignModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" size="sm">
-          <Mail className="mr-2 h-4 w-4" />
-          Send Campaign
+          <Send className="mr-2 h-4 w-4" />
+          Test Campaign
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Send Campaign Emails</DialogTitle>
+          <DialogTitle>Send Test Email</DialogTitle>
           <DialogDescription>
-            This will send emails to {leads.length} leads using the template
-            below.
+            Preview how this campaign will look by sending a test email.
           </DialogDescription>
         </DialogHeader>
 
@@ -126,25 +103,48 @@ export function SendCampaignModal({
             </div>
           </div>
 
-          <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-            <p className="font-medium">Note:</p>
-            <p>
-              This is a simulated email campaign. In production, this would send
-              real emails to the leads.
+          <div className="space-y-2">
+            <Label htmlFor="test-email">Test Email Address</Label>
+            <Input
+              id="test-email"
+              type="email"
+              placeholder="you@example.com"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Send a test email to preview how your campaign will look when
+              received.
             </p>
           </div>
 
-          <div className="flex justify-end space-x-2 pt-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+          <div className="rounded-md border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+            <p className="font-medium">Note:</p>
+            <p>
+              This is a test email only and will not be sent to actual campaign
+              leads.
+            </p>
+          </div>
+
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
-            <Button onClick={() => sendCampaign()} disabled={isPending}>
+            <Button
+              className="flex-1"
+              onClick={() => sendTestEmail()}
+              disabled={isPending || !testEmail}
+            >
               {isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Mail className="mr-2 h-4 w-4" />
+                <Send className="mr-2 h-4 w-4" />
               )}
-              Send to {leads.length} Leads
+              Send Test Email
             </Button>
           </div>
         </div>

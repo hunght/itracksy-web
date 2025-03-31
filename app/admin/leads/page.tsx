@@ -24,7 +24,29 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Tag, Filter, Plus } from 'lucide-react';
+import { Tag, Plus, Calendar } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+
+// Function to format date
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return 'N/A';
+
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+};
 
 export default function LeadsPage() {
   const supabase = useSupabaseBrowser();
@@ -150,7 +172,7 @@ export default function LeadsPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <Card className="mx-auto max-w-4xl">
+      <Card className="mx-auto max-w-6xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Leads Management</CardTitle>
           <div className="flex space-x-2">
@@ -231,7 +253,9 @@ export default function LeadsPage() {
           )}
 
           {filteredLeads.length === 0 ? (
-            <p>No leads available.</p>
+            <p className="py-4 text-center text-muted-foreground">
+              No leads available.
+            </p>
           ) : (
             <div>
               <div className="mb-4 flex items-center justify-between">
@@ -254,35 +278,66 @@ export default function LeadsPage() {
                   </span>
                 </div>
               </div>
-              <ul className="space-y-4">
-                {filteredLeads.map((lead) => (
-                  <li key={lead.id} className="flex items-center border-b py-2">
-                    <Checkbox
-                      id={`lead-${lead.id}`}
-                      checked={selectedLeads.some(
-                        (selected) => selected.id === lead.id,
-                      )}
-                      onCheckedChange={() => toggleLeadSelection(lead)}
-                      className="mr-3"
-                    />
-                    <div className="grid flex-1 grid-cols-6 gap-4">
-                      <span className="truncate font-semibold">
-                        {lead.name}
-                      </span>
-                      <span className="truncate">{lead.email}</span>
-                      <span className="truncate">{lead.phone}</span>
-                      <span className="truncate">
-                        {lead.group ? (
-                          <Badge variant="outline">{lead.group}</Badge>
-                        ) : null}
-                      </span>
-                      <span className="col-span-2 truncate">
-                        {lead.message || 'No message'}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]">
+                        <span className="sr-only">Select</span>
+                      </TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead>Group</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead className="w-[250px]">Message</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredLeads.map((lead) => (
+                      <TableRow key={lead.id}>
+                        <TableCell>
+                          <Checkbox
+                            id={`lead-${lead.id}`}
+                            checked={selectedLeads.some(
+                              (selected) => selected.id === lead.id,
+                            )}
+                            onCheckedChange={() => toggleLeadSelection(lead)}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {lead.name}
+                        </TableCell>
+                        <TableCell>{lead.email}</TableCell>
+                        <TableCell>{lead.phone}</TableCell>
+                        <TableCell>
+                          {lead.group ? (
+                            <Badge variant="outline">{lead.group}</Badge>
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              None
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Calendar className="mr-1.5 h-3.5 w-3.5 text-gray-500" />
+                            <span className="text-sm">
+                              {formatDate(lead.created_at ?? null)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="max-w-[250px]">
+                          <p className="truncate text-sm text-muted-foreground">
+                            {lead.message || 'No message'}
+                          </p>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>

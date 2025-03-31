@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -132,18 +133,17 @@ export function AddLeadsToCampaignModal({
     },
   });
 
-  const filteredLeads = leads?.filter((lead) => {
-    const matchesSearch =
-      lead.name?.toLowerCase().includes(search.toLowerCase()) ||
-      lead.email.toLowerCase().includes(search.toLowerCase());
+  const filteredLeads = leads
+    ?.filter((lead) => !existingCampaignLeads?.includes(lead.id))
+    ?.filter((lead) => {
+      const matchesSearch =
+        lead.name?.toLowerCase().includes(search.toLowerCase()) ||
+        lead.email.toLowerCase().includes(search.toLowerCase());
 
-    const matchesGroup = !selectedGroup || lead.group === selectedGroup;
+      const matchesGroup = !selectedGroup || lead.group === selectedGroup;
 
-    return matchesSearch && matchesGroup;
-  });
-
-  const isLeadInCampaign = (leadId: string) =>
-    existingCampaignLeads?.includes(leadId);
+      return matchesSearch && matchesGroup;
+    });
 
   const toggleLead = (leadId: string) => {
     setSelectedLeads((prev) =>
@@ -171,6 +171,9 @@ export function AddLeadsToCampaignModal({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Add Leads to Campaign</DialogTitle>
+          <DialogDescription>
+            Only leads not yet added to this campaign are shown below.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -230,52 +233,44 @@ export function AddLeadsToCampaignModal({
               <ScrollArea className="h-[300px] rounded-md border p-2">
                 {filteredLeads?.length === 0 ? (
                   <div className="flex h-full items-center justify-center text-muted-foreground">
-                    No leads found matching your search
+                    {search || selectedGroup
+                      ? 'No matching leads found'
+                      : 'All leads have already been added to this campaign'}
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {filteredLeads?.map((lead) => {
-                      const isInCampaign = isLeadInCampaign(lead.id);
-
-                      return (
-                        <div
-                          key={lead.id}
-                          className="flex items-center space-x-2 rounded p-2 hover:bg-muted"
-                        >
-                          <Checkbox
-                            id={`lead-${lead.id}`}
-                            checked={selectedLeads.includes(lead.id)}
-                            onCheckedChange={() => toggleLead(lead.id)}
-                            disabled={isInCampaign}
-                          />
-                          <div className="min-w-0 flex-1">
-                            <Label
-                              htmlFor={`lead-${lead.id}`}
-                              className="flex cursor-pointer items-center justify-between"
-                            >
-                              <div>
-                                <p className="truncate font-medium">
-                                  {lead.name}
-                                </p>
-                                <p className="truncate text-sm text-muted-foreground">
-                                  {lead.email}
-                                  {lead.group && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                      Group: {lead.group}
-                                    </span>
-                                  )}
-                                </p>
-                              </div>
-                              {isInCampaign && (
-                                <span className="rounded bg-muted px-2 py-1 text-xs">
-                                  Already added
-                                </span>
-                              )}
-                            </Label>
-                          </div>
+                    {filteredLeads?.map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="flex items-center space-x-2 rounded p-2 hover:bg-muted"
+                      >
+                        <Checkbox
+                          id={`lead-${lead.id}`}
+                          checked={selectedLeads.includes(lead.id)}
+                          onCheckedChange={() => toggleLead(lead.id)}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <Label
+                            htmlFor={`lead-${lead.id}`}
+                            className="flex cursor-pointer items-center justify-between"
+                          >
+                            <div>
+                              <p className="truncate font-medium">
+                                {lead.name}
+                              </p>
+                              <p className="truncate text-sm text-muted-foreground">
+                                {lead.email}
+                                {lead.group && (
+                                  <span className="ml-2 text-xs text-muted-foreground">
+                                    Group: {lead.group}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </Label>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 )}
               </ScrollArea>
