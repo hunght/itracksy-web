@@ -1,6 +1,13 @@
-// Define email campaign flags
-export const EMAIL_CAMPAIGNS = {
-  INACTIVITY_REMINDER_7_DAYS: 1 << 0, // 1
-  WELCOME_SERIES: 1 << 1, // 2
-  PRODUCT_UPDATE: 1 << 2, // 4
-};
+import { WelcomeEmail } from '@/emails/WelcomeEmail';
+import { NewsletterEmail } from '@/emails/NewsletterEmail';
+import TipsEmail from '@/emails/TipsEmail';
+import BetaInviteBuddybeepEmail from '@/emails/BetaInviteEmail';
+
+export const EMAIL_TEMPLATES = {
+  welcome: WelcomeEmail,
+  newsletter: NewsletterEmail,
+  betaInviteEmail: TipsEmail,
+  invite_buddybeep_email_template: BetaInviteBuddybeepEmail,
+} as const;
+
+export type TemplateType = keyof typeof EMAIL_TEMPLATES;

@@ -44,15 +44,25 @@ export function SendCampaignModal({
         throw new Error('Please enter a valid email address');
       }
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/send-test-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          testEmail,
+          emailSubject: campaign.email_subject,
+          emailTemplate: campaign.email_template,
+        }),
+      });
 
-      // Simulate sending test email
-      console.log(`Sending test email to: ${testEmail}`);
-      console.log(`Subject: ${campaign.email_subject}`);
-      console.log(`Template: ${campaign.email_template}`);
+      const data = await response.json();
 
-      return { success: true, recipient: testEmail };
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send test email');
+      }
+
+      return data;
     },
     onSuccess: (data) => {
       toast({

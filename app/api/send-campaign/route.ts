@@ -7,6 +7,7 @@ import { NewsletterEmail } from '@/emails/NewsletterEmail';
 import TipsEmail from '@/emails/TipsEmail';
 import { Campaign } from '@/types/campaigns';
 import BetaInviteBuddybeepEmail from '@/emails/BetaInviteEmail';
+import { EMAIL_TEMPLATES, TemplateType } from '@/config/email_campaigns';
 
 // Import other email templates
 
@@ -14,15 +15,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const BATCH_SIZE = 10; // Process 10 leads at a time
 const DELAY_BETWEEN_EMAILS = 1000; // 1 second delay between emails
 const TIME_WINDOW_MINUTES = 20; // Send emails within 20 minutes of submission_time as the cron job run every 15 minutes
-
-const EMAIL_TEMPLATES = {
-  welcome: WelcomeEmail,
-  newsletter: NewsletterEmail,
-  betaInviteEmail: TipsEmail,
-  invite_buddybeep_email_template: BetaInviteBuddybeepEmail,
-} as const;
-
-type TemplateType = keyof typeof EMAIL_TEMPLATES;
 
 // Add development check constant
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -139,7 +131,6 @@ async function processCampaignsInBackground(
               name: campaignLead.lead.name,
             }),
             tags: [
-              { name: 'email_type', value: 'beta_invite' },
               { name: 'lead_id', value: campaignLead.lead.id },
               { name: 'campaign_id', value: campaign.id },
             ],
