@@ -119,7 +119,7 @@ async function processCampaignsInBackground(
         // Send email using Resend
         const { data: emailData, error: emailError } = await resend.emails.send(
           {
-            from: 'ITrackSy <noreply@itracksy.com>',
+            from: 'iTracksy <noreply@itracksy.com>',
             to: isDevelopment ? DEV_EMAIL : campaignLead.lead.email,
             subject: isDevelopment
               ? `[TEST] ${campaign.email_subject}`
