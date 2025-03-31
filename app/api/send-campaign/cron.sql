@@ -19,9 +19,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create a cron job that runs every hour
+-- Create a cron job that runs every 15 minutes
 SELECT cron.schedule(
   'send-email-campaigns',
-  '0 * * * *', -- Run every hour
+  '*/15 * * * *', -- Run every 15 minutes
   'SELECT send_campaign_data_to_api()'
 );

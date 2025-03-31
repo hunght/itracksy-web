@@ -12,7 +12,7 @@ import { Campaign } from '@/types/campaigns';
 const resend = new Resend(process.env.RESEND_API_KEY);
 const BATCH_SIZE = 10; // Process 10 leads at a time
 const DELAY_BETWEEN_EMAILS = 1000; // 1 second delay between emails
-const TIME_WINDOW_MINUTES = 90; // Send emails within 90 minutes of submission_time as the cron job run every hour
+const TIME_WINDOW_MINUTES = 20; // Send emails within 20 minutes of submission_time as the cron job run every 15 minutes
 
 const EMAIL_TEMPLATES = {
   welcome: WelcomeEmail,
@@ -45,14 +45,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Start the email processing in the background without awaiting it
-    // This allows the API to return immediately
-    processCampaignsInBackground(campaigns, supabase);
+    // Process the campaigns and await the result
+    // This ensures the function doesn't terminate prematurely
+    await processCampaignsInBackground(campaigns, supabase);
 
-    // Return success immediately
+    // Return success after processing is complete
     return NextResponse.json({
       success: true,
-      message: 'Campaign processing has been initiated',
+      message: 'Campaign processing completed successfully',
     });
   } catch (error) {
     console.error('Error in send-campaign endpoint:', error);
