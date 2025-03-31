@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { CampaignDashboard } from '@/components/admin/campaigns/campaign-dashboard';
+import { CampaignDashboard } from '@/app/admin/marketing-campaigns/campaigns/campaign-dashboard';
 import { PageHeader } from '@/components/ui/page-header';
 
 export const metadata: Metadata = {

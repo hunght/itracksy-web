@@ -12,15 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
-
-type Lead = {
-  id: string;
-  created_at: string;
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-};
+import { Lead } from '@/types/supabase';
 
 export function CreateLeadModal() {
   const [open, setOpen] = useState(false);
@@ -42,7 +34,13 @@ export function CreateLeadModal() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     submitLead(
-      { name, email, phone, message },
+      {
+        name,
+        email,
+        phone,
+        message,
+        submission_time: new Date().toISOString(),
+      },
       {
         onSuccess: () => {
           setOpen(false);

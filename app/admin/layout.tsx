@@ -16,9 +16,6 @@ export default function AdminLayout({
           <TabsTrigger value="/admin/marketing-campaigns" asChild>
             <Link href="/admin/marketing-campaigns">Marketing Campaigns</Link>
           </TabsTrigger>
-          <TabsTrigger value="/admin/email-events" asChild>
-            <Link href="/admin/email-events">Email Analytics</Link>
-          </TabsTrigger>
         </TabsList>
       </Tabs>
       {children}
