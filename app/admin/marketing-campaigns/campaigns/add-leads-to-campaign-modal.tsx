@@ -19,6 +19,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2 } from 'lucide-react';
 import { Campaign } from '@/types/campaigns';
 import { Tables } from '@/lib/supabase';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface AddLeadsToCampaignModalProps {
   campaign: Campaign;
@@ -29,6 +36,7 @@ export function AddLeadsToCampaignModal({
 }: AddLeadsToCampaignModalProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
@@ -43,6 +51,24 @@ export function AddLeadsToCampaignModal({
 
       if (error) throw error;
       return data as Tables<'leads'>[];
+    },
+    enabled: open,
+  });
+
+  const { data: groups, isLoading: isLoadingGroups } = useQuery({
+    queryKey: ['lead-groups'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('group')
+        .not('group', 'is', null);
+
+      if (error) throw error;
+
+      const uniqueGroups = Array.from(
+        new Set(data.map((item) => item.group).filter(Boolean)),
+      );
+      return uniqueGroups as string[];
     },
     enabled: open,
   });
@@ -63,7 +89,6 @@ export function AddLeadsToCampaignModal({
 
   const { mutate: addLeadsToCampaign, isPending } = useMutation({
     mutationFn: async (leadIds: string[]) => {
-      // Filter out leads that are already in the campaign
       const newLeadIds = leadIds.filter(
         (id) => !existingCampaignLeads?.includes(id),
       );
@@ -107,11 +132,15 @@ export function AddLeadsToCampaignModal({
     },
   });
 
-  const filteredLeads = leads?.filter(
-    (lead) =>
+  const filteredLeads = leads?.filter((lead) => {
+    const matchesSearch =
       lead.name?.toLowerCase().includes(search.toLowerCase()) ||
-      lead.email.toLowerCase().includes(search.toLowerCase()),
-  );
+      lead.email.toLowerCase().includes(search.toLowerCase());
+
+    const matchesGroup = !selectedGroup || lead.group === selectedGroup;
+
+    return matchesSearch && matchesGroup;
+  });
 
   const isLeadInCampaign = (leadId: string) =>
     existingCampaignLeads?.includes(leadId);
@@ -145,11 +174,35 @@ export function AddLeadsToCampaignModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          <Input
-            placeholder="Search leads by name or email"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className="flex space-x-2">
+            <div className="flex-1">
+              <Input
+                placeholder="Search leads by name or email"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="w-40">
+              <Select
+                value={selectedGroup || 'all'}
+                onValueChange={(value) =>
+                  setSelectedGroup(value === 'all' ? null : value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by group" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Groups</SelectItem>
+                  {groups?.map((group) => (
+                    <SelectItem key={group} value={group}>
+                      {group}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           {isLoading ? (
             <div className="flex h-[300px] items-center justify-center">
@@ -206,6 +259,11 @@ export function AddLeadsToCampaignModal({
                                 </p>
                                 <p className="truncate text-sm text-muted-foreground">
                                   {lead.email}
+                                  {lead.group && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      Group: {lead.group}
+                                    </span>
+                                  )}
                                 </p>
                               </div>
                               {isInCampaign && (

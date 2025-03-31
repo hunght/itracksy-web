@@ -10,11 +10,9 @@
     "start": "next start",
     "lint": "next lint",
     "shadcn": "pnpm dlx shadcn@latest add ",
-    "db": "supabase gen types typescript --project-id onrbhccgncgewwcpvzxs --schema public > lib/supabase.ts",
     "clear": "rm -rf .next node_modules/.cache",
-    "supabase:link": "./set_supabase_token.sh",
+    "supabase:types": "./set_supabase_token.sh",
     "supabase:pull": "supabase db pull --linked",
-    "supabase:types": "supabase gen types typescript --linked --schema public > lib/supabase.ts",
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset",
     "supabase:sync": "npm run supabase:pull && npm run supabase:types"

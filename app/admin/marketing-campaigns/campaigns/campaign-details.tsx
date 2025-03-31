@@ -185,13 +185,6 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
           </div>
 
           <div>
-            <h4 className="mb-1 text-sm font-medium">Email Subject</h4>
-            <p className="rounded-md bg-muted p-2 text-sm">
-              {campaign.email_subject}
-            </p>
-          </div>
-
-          <div>
             <h4 className="mb-1 text-sm font-medium">Email Template</h4>
             <ScrollArea className="h-[200px] w-full rounded-md border p-4">
               <pre className="whitespace-pre-wrap font-mono text-sm">

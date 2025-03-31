@@ -4,7 +4,6 @@ import WelcomeEmail from '../../emails/WelcomeEmail';
 import InactivityEmail from '../../emails/InactivityEmail';
 import ProductUpdateEmail from '../../emails/ProductUpdateEmail';
 import { OTPEmail } from '../../emails/OTPEmail';
-import BetaInviteEmail from '../../emails/BetaInviteEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -131,38 +130,3 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
 const sanitizedToEmail = (toEmail: string) => {
   return toEmail ? toEmail.replace(/[^\w-]/g, '_') : 'there';
 };
-export async function sendBetaInviteEmail({
-  userEmail,
-  recipientName,
-}: {
-  userEmail: string;
-  recipientName?: string;
-}) {
-  const toEmail = isDevelopment ? devEmail : userEmail;
-  console.log('[sendBetaInviteEmail] userEmail', userEmail);
-
-  try {
-    if (toEmail) {
-      // Sanitize recipient name for tag value - only allow ASCII letters, numbers, underscores, or dashes
-
-      await sendEmailWithRetry({
-        to: toEmail,
-        subject: 'Exclusive Invitation: Join the iTracksy Beta!',
-        react: BetaInviteEmail({ recipientName }),
-        tags: [
-          { name: 'email_type', value: 'beta_invite' },
-          { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
-        ],
-      });
-
-      if (isDevelopment) {
-        console.log(`Beta invitation email sent successfully to ${toEmail}`);
-      }
-
-      return { success: true };
-    }
-  } catch (emailError) {
-    console.error('Failed to send beta invitation email:', emailError);
-    return { success: false, error: emailError };
-  }
-}

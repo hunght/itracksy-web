@@ -15,6 +15,7 @@ import { Lead } from '@/types/supabase';
 
 export function UploadLeadsModal() {
   const [open, setOpen] = useState(false);
+  const [groupName, setGroupName] = useState('');
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
@@ -69,6 +70,9 @@ export function UploadLeadsModal() {
       const idIndex = headers.findIndex((h) =>
         h.trim().toLowerCase().includes('id'),
       );
+      const nameIndex = headers.findIndex((h) =>
+        h.trim().toLowerCase().includes('name'),
+      );
 
       if (emailIndex === -1) {
         toast({
@@ -89,6 +93,15 @@ export function UploadLeadsModal() {
             values[dateIndex]?.trim() || new Date().toISOString();
           const submissionId = values[idIndex]?.trim() || '';
 
+          // Use name from CSV if available, otherwise extract from email
+          let name;
+          if (nameIndex !== -1 && values[nameIndex]?.trim()) {
+            name = values[nameIndex].trim();
+          } else {
+            // Extract username from email as fallback
+            name = email.split('@')[0] || 'Unknown';
+          }
+
           // Parse submission date, defaulting to current time if invalid
           let parsedSubmissionTime: Date;
           try {
@@ -101,15 +114,13 @@ export function UploadLeadsModal() {
             parsedSubmissionTime = new Date();
           }
 
-          // Extract username from email to use as name
-          const name = email.split('@')[0] || 'Unknown';
-
           return {
             name: name,
             email: email,
             phone: 'Not provided', // Default value
             message: `Imported from CSV. Submission ID: ${submissionId}, Submission Time: ${parsedSubmissionTime.toISOString()}`, // Include parsed time
-            submission_time: parsedSubmissionTime.toISOString(), // Add explicit submission time field
+            submission_time: parsedSubmissionTime.toISOString(),
+            group: groupName || null, // Use provided group name or null
           };
         })
         .filter((lead) => lead.email); // Only keep entries with email
@@ -157,16 +168,64 @@ export function UploadLeadsModal() {
           <DialogTitle>Upload Leads from CSV</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="group-name" className="text-sm font-medium">
+              Group Name (optional)
+            </label>
+            <Input
+              id="group-name"
+              placeholder="Enter a group name for these leads"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+            />
+          </div>
           <Input
             type="file"
             accept=".csv"
             onChange={handleFileUpload}
             disabled={isUploading}
           />
-          <p className="text-sm text-gray-500">
-            Your CSV should include at least an Email column. Submission Date
-            and Submission ID are optional.
-          </p>
+          <div className="space-y-2 text-sm text-gray-500">
+            <p className="font-medium">CSV Format Requirements:</p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <strong>Required column:</strong>
+                {' Email (contains &ldquo;email&rdquo; in header)'}
+              </li>
+              <li>
+                <strong>Optional columns:</strong>
+                <ul className="list-disc pl-5">
+                  <li>
+                    Name (contains &ldquo;name&rdquo; in header) - Lead&apos;s
+                    full name
+                  </li>
+                  <li>
+                    Date (contains &ldquo;date&rdquo; in header) - When the lead
+                    was submitted
+                  </li>
+                  <li>
+                    ID (contains &ldquo;id&rdquo; in header) - A unique
+                    identifier for the lead
+                  </li>
+                </ul>
+              </li>
+              <li>
+                If no name column is found, the system will extract the username
+                from the email address
+              </li>
+              <li>
+                If no date is provided or it&apos;s invalid, the current date
+                will be used
+              </li>
+              <li>
+                The group name above will be applied to all imported leads
+              </li>
+            </ul>
+            <p className="mt-2">
+              Example header row:{' '}
+              <code>Name,Email,Submission Date,Submission ID</code>
+            </p>
+          </div>
           <p className="text-sm text-gray-500">
             {isUploading ? 'Uploading...' : 'Select a CSV file to upload.'}
           </p>
