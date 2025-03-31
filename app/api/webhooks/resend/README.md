@@ -6,7 +6,6 @@ This system implements email tracking functionality using Resend webhooks to sto
 
 - Tracks all email events (sent, delivered, opened, clicked, bounced, complained)
 - Stores comprehensive event data in the `email_events` table
-- Updates the `beta_invites` table for beta invitation emails
 - Provides an API endpoint for retrieving email statistics
 
 ## Setup Instructions
