@@ -1,12 +1,9 @@
 import { createAdminClient, TypedSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { WelcomeEmail } from '@/emails/WelcomeEmail';
-import { NewsletterEmail } from '@/emails/NewsletterEmail';
 
-import TipsEmail from '@/emails/TipsEmail';
 import { Campaign } from '@/types/campaigns';
-import BetaInviteBuddybeepEmail from '@/emails/BetaInviteEmail';
+
 import { EMAIL_TEMPLATES, TemplateType } from '@/config/email_campaigns';
 
 // Import other email templates

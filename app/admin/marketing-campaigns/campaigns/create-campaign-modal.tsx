@@ -52,8 +52,7 @@ export function CreateCampaignModal({
       name: '',
       description: '',
       email_subject: '',
-      email_template:
-        'Hi {{name}},\n\nWe thought you might be interested in...\n\nBest regards,\nThe iTRACKsy Team',
+      email_template: '',
     },
   });
 
@@ -197,18 +196,13 @@ export function CreateCampaignModal({
               name="email_template"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Template</FormLabel>
+                  <FormLabel>Email Template ID</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Hi {{name}}, ..."
-                      className="min-h-[150px]"
-                      {...field}
-                    />
+                    <Input placeholder="template_12345" {...field} />
                   </FormControl>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
-                    {`Use {{ name }} and {{ email }} as placeholders that will be
-                    replaced with lead data.`}
+                    Enter the ID of the email template you want to use
                   </p>
                 </FormItem>
               )}

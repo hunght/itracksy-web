@@ -9,11 +9,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Mail, Eye, MousePointer, AlertCircle } from 'lucide-react';
+import {
+  Loader2,
+  Mail,
+  Eye,
+  MousePointer,
+  AlertCircle,
+  Pencil,
+  Check,
+  X,
+} from 'lucide-react';
 import { AddLeadsToCampaignModal } from './add-leads-to-campaign-modal';
 import { SendCampaignModal } from './send-campaign-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 interface CampaignDetailsProps {
   campaign: Campaign;
@@ -39,6 +49,10 @@ interface CampaignLeadWithLead {
 
 export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
   const [activeTab, setActiveTab] = useState('details');
+  const [editingSubject, setEditingSubject] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(false);
+  const [subjectValue, setSubjectValue] = useState(campaign.email_subject);
+  const [templateValue, setTemplateValue] = useState(campaign.email_template);
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
@@ -93,6 +107,67 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
       });
     },
   });
+
+  const { mutate: updateCampaignField, isPending: isUpdatingField } =
+    useMutation({
+      mutationFn: async ({
+        field,
+        value,
+      }: {
+        field: string;
+        value: string;
+      }) => {
+        const { data, error } = await supabase
+          .from('marketing_campaigns')
+          .update({ [field]: value })
+          .eq('id', campaign.id)
+          .select('*')
+          .single();
+
+        if (error) throw error;
+        return data as Campaign;
+      },
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+        onUpdate(data);
+        toast({
+          title: 'Campaign Updated',
+          description: 'Campaign details have been updated',
+        });
+      },
+      onError: (error) => {
+        console.error('Error updating campaign:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to update campaign. Please try again.',
+          variant: 'destructive',
+        });
+      },
+    });
+
+  const handleSaveSubject = () => {
+    if (subjectValue !== campaign.email_subject) {
+      updateCampaignField({ field: 'email_subject', value: subjectValue });
+    }
+    setEditingSubject(false);
+  };
+
+  const handleSaveTemplate = () => {
+    if (templateValue !== campaign.email_template) {
+      updateCampaignField({ field: 'email_template', value: templateValue });
+    }
+    setEditingTemplate(false);
+  };
+
+  const handleCancelSubjectEdit = () => {
+    setSubjectValue(campaign.email_subject);
+    setEditingSubject(false);
+  };
+
+  const handleCancelTemplateEdit = () => {
+    setTemplateValue(campaign.email_template);
+    setEditingTemplate(false);
+  };
 
   // Calculate campaign statistics
   const totalLeads = campaignLeads?.length || 0;
@@ -185,12 +260,99 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
           </div>
 
           <div>
-            <h4 className="mb-1 text-sm font-medium">Email Template</h4>
-            <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-              <pre className="whitespace-pre-wrap font-mono text-sm">
-                {campaign.email_template}
-              </pre>
-            </ScrollArea>
+            <div className="mb-1 flex items-center justify-between">
+              <h4 className="text-sm font-medium">Email Subject</h4>
+              {!editingSubject && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingSubject(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div className="rounded-md border p-4">
+              {editingSubject ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={subjectValue}
+                    onChange={(e) => setSubjectValue(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSaveSubject}
+                    disabled={isUpdatingField}
+                  >
+                    {isUpdatingField ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCancelSubjectEdit}
+                    disabled={isUpdatingField}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm">{campaign.email_subject}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <h4 className="text-sm font-medium">Email Template ID</h4>
+              {!editingTemplate && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingTemplate(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div className="rounded-md border p-4">
+              {editingTemplate ? (
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={templateValue}
+                    onChange={(e) => setTemplateValue(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleSaveTemplate}
+                    disabled={isUpdatingField}
+                  >
+                    {isUpdatingField ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Check className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleCancelTemplateEdit}
+                    disabled={isUpdatingField}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm">{campaign.email_template}</p>
+              )}
+            </div>
           </div>
         </TabsContent>
 
