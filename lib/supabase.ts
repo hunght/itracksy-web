@@ -9,56 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      beta_invites: {
-        Row: {
-          clicked_at: string | null
-          delivered_at: string | null
-          email: string
-          id: string
-          invite_message: string
-          lead_id: string | null
-          name: string
-          opened_at: string | null
-          registered_at: string | null
-          sent_at: string
-          status: string
-        }
-        Insert: {
-          clicked_at?: string | null
-          delivered_at?: string | null
-          email: string
-          id?: string
-          invite_message: string
-          lead_id?: string | null
-          name: string
-          opened_at?: string | null
-          registered_at?: string | null
-          sent_at?: string
-          status?: string
-        }
-        Update: {
-          clicked_at?: string | null
-          delivered_at?: string | null
-          email?: string
-          id?: string
-          invite_message?: string
-          lead_id?: string | null
-          name?: string
-          opened_at?: string | null
-          registered_at?: string | null
-          sent_at?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "beta_invites_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       campaign_leads: {
         Row: {
           campaign_id: string
@@ -107,39 +57,6 @@ export type Database = {
           },
         ]
       }
-      email_events: {
-        Row: {
-          created_at: string
-          email_id: string
-          email_type: string | null
-          event_type: string
-          id: string
-          metadata: Json | null
-          recipient_email: string
-          subject: string | null
-        }
-        Insert: {
-          created_at?: string
-          email_id: string
-          email_type?: string | null
-          event_type: string
-          id?: string
-          metadata?: Json | null
-          recipient_email: string
-          subject?: string | null
-        }
-        Update: {
-          created_at?: string
-          email_id?: string
-          email_type?: string | null
-          event_type?: string
-          id?: string
-          metadata?: Json | null
-          recipient_email?: string
-          subject?: string | null
-        }
-        Relationships: []
-      }
       feedback: {
         Row: {
           created_at: string
@@ -175,7 +92,7 @@ export type Database = {
           message: string
           name: string
           phone: string
-          submission_time: string | null
+          submission_time: string
         }
         Insert: {
           created_at?: string
@@ -184,7 +101,7 @@ export type Database = {
           message: string
           name: string
           phone: string
-          submission_time?: string | null
+          submission_time: string
         }
         Update: {
           created_at?: string
@@ -193,7 +110,7 @@ export type Database = {
           message?: string
           name?: string
           phone?: string
-          submission_time?: string | null
+          submission_time?: string
         }
         Relationships: []
       }
@@ -238,13 +155,161 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      bytea_to_text: {
+        Args: {
+          data: string
+        }
+        Returns: string
+      }
+      http: {
+        Args: {
+          request: Database["public"]["CompositeTypes"]["http_request"]
+        }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_delete:
+        | {
+            Args: {
+              uri: string
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+        | {
+            Args: {
+              uri: string
+              content: string
+              content_type: string
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+      http_get:
+        | {
+            Args: {
+              uri: string
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+        | {
+            Args: {
+              uri: string
+              data: Json
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+      http_head: {
+        Args: {
+          uri: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_header: {
+        Args: {
+          field: string
+          value: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["http_header"]
+      }
+      http_list_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          curlopt: string
+          value: string
+        }[]
+      }
+      http_patch: {
+        Args: {
+          uri: string
+          content: string
+          content_type: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_post:
+        | {
+            Args: {
+              uri: string
+              content: string
+              content_type: string
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+        | {
+            Args: {
+              uri: string
+              data: Json
+            }
+            Returns: Database["public"]["CompositeTypes"]["http_response"]
+          }
+      http_put: {
+        Args: {
+          uri: string
+          content: string
+          content_type: string
+        }
+        Returns: Database["public"]["CompositeTypes"]["http_response"]
+      }
+      http_reset_curlopt: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      http_set_curlopt: {
+        Args: {
+          curlopt: string
+          value: string
+        }
+        Returns: boolean
+      }
+      send_campaign_data_to_api: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      text_to_bytea: {
+        Args: {
+          data: string
+        }
+        Returns: string
+      }
+      urlencode:
+        | {
+            Args: {
+              data: Json
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              string: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              string: string
+            }
+            Returns: string
+          }
     }
     Enums: {
       [_ in never]: never
     }
     CompositeTypes: {
-      [_ in never]: never
+      http_header: {
+        field: string | null
+        value: string | null
+      }
+      http_request: {
+        method: unknown | null
+        uri: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content_type: string | null
+        content: string | null
+      }
+      http_response: {
+        status: number | null
+        content_type: string | null
+        headers: Database["public"]["CompositeTypes"]["http_header"][] | null
+        content: string | null
+      }
     }
   }
 }

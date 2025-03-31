@@ -136,6 +136,11 @@ async function processCampaignsInBackground(
             react: EMAIL_TEMPLATES[campaign.email_template as TemplateType]({
               name: campaignLead.lead.name,
             }),
+            tags: [
+              { name: 'email_type', value: 'beta_invite' },
+              { name: 'lead_id', value: campaignLead.lead.id },
+              { name: 'campaign_id', value: campaign.id },
+            ],
           },
         );
 

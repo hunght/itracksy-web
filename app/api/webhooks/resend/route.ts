@@ -70,8 +70,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Extract email type from tags if available
-    const emailType = tagsObject.email_type || 'unknown';
+    // Extract campaign_id from tags if available
+    let campaignId = tagsObject.campaign_id;
+
+    if (!campaignId) {
+      // find the current active campaign
+      const { data: activeCampaigns, error: activeCampaignError } =
+        await supabase
+          .from('marketing_campaigns')
+          .select('id')
+          .eq('status', 'active')
+          .single();
+      if (activeCampaignError || !activeCampaigns) {
+        // Log the error and return a 404 response
+        // throw error if no active campaign is found
+        console.error('Error fetching active campaign:', activeCampaignError);
+        return NextResponse.json({ error: tagsObject }, { status: 404 });
+      }
+
+      campaignId = activeCampaigns.id;
+    }
 
     // Create metadata object based on event type
     let metadata: Record<string, any> = {
@@ -86,66 +104,96 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    // Store the event in the email_events table
-    const { error: insertError } = await supabase.from('email_events').insert({
-      email_id: data.email_id,
-      recipient_email: recipientEmail,
-      event_type: eventType,
-      subject: data.subject,
-      email_type: emailType,
-      metadata,
-    });
+    // If this is related to a campaign (has campaign_id tag)
+    if (campaignId) {
+      const leadId = tagsObject.lead_id;
+      let campaignLeadsQuery;
 
-    if (insertError) {
-      console.error('Error inserting email event:', insertError);
-    }
+      // Find the campaign_lead entry using lead_id if available, or email otherwise
+      if (leadId) {
+        // Query using lead_id directly
+        campaignLeadsQuery = await supabase
+          .from('campaign_leads')
+          .select('id, campaign_id, lead_id, sent_at')
+          .eq('campaign_id', campaignId)
+          .eq('lead_id', leadId)
+          .single();
+      } else {
+        // Fallback to using email lookup
+        campaignLeadsQuery = await supabase
+          .from('campaign_leads')
+          .select('id, campaign_id, lead_id, sent_at')
+          .eq('campaign_id', campaignId)
+          .eq('lead:leads(email)', recipientEmail)
+          .single();
+      }
 
-    // Process different event types for beta_invites table
-    if (emailType === 'beta_invite') {
-      switch (type) {
-        case 'email.delivered':
-          // Update beta_invites table if the email is delivered
-          const { error: deliveredError } = await supabase
-            .from('beta_invites')
-            .update({ delivered_at: new Date().toISOString() })
-            .eq('email', recipientEmail)
-            .is('delivered_at', null);
+      const { data: campaignLeads, error: findError } = campaignLeadsQuery;
 
-          if (deliveredError) {
-            console.error('Error updating delivered_at:', deliveredError);
-          }
-          break;
+      if (findError) {
+        console.error('Error finding campaign lead:', findError);
+      } else if (campaignLeads) {
+        // Update the campaign_leads table based on the event type
+        switch (type) {
+          case 'email.sent':
+          case 'email.delivered':
+            if (!campaignLeads.sent_at) {
+              const { error: sentError } = await supabase
+                .from('campaign_leads')
+                .update({
+                  status: 'sent',
+                  sent_at: new Date().toISOString(),
+                })
+                .eq('id', campaignLeads.id);
 
-        case 'email.opened':
-          // Update beta_invites table if the email is opened
-          const { error: openedError } = await supabase
-            .from('beta_invites')
-            .update({ opened_at: new Date().toISOString() })
-            .eq('email', recipientEmail)
-            .is('opened_at', null);
+              if (sentError) {
+                console.error('Error updating sent_at:', sentError);
+              }
+            }
+            break;
 
-          if (openedError) {
-            console.error('Error updating opened_at:', openedError);
-          }
-          break;
+          case 'email.opened':
+            const { error: openedError } = await supabase
+              .from('campaign_leads')
+              .update({ opened_at: new Date().toISOString() })
+              .eq('id', campaignLeads.id)
+              .is('opened_at', null);
 
-        case 'email.clicked':
-          // Update beta_invites table if a link in the email is clicked
-          const { error: clickedError } = await supabase
-            .from('beta_invites')
-            .update({ clicked_at: new Date().toISOString() })
-            .eq('email', recipientEmail)
-            .is('clicked_at', null);
+            if (openedError) {
+              console.error('Error updating opened_at:', openedError);
+            }
+            break;
 
-          if (clickedError) {
-            console.error('Error updating clicked_at:', clickedError);
-          }
-          break;
+          case 'email.clicked':
+            const { error: clickedError } = await supabase
+              .from('campaign_leads')
+              .update({ clicked_at: new Date().toISOString() })
+              .eq('id', campaignLeads.id)
+              .is('clicked_at', null);
+
+            if (clickedError) {
+              console.error('Error updating clicked_at:', clickedError);
+            }
+            break;
+
+          case 'email.bounced':
+            const { error: bouncedError } = await supabase
+              .from('campaign_leads')
+              .update({ status: 'bounced' })
+              .eq('id', campaignLeads.id);
+
+            if (bouncedError) {
+              console.error('Error updating bounce status:', bouncedError);
+            }
+            break;
+        }
       }
     }
 
     // Log the event for debugging
-    console.log(`Email event: ${type} for ${recipientEmail} (${emailType})`);
+    console.log(
+      `Email event: ${type} for ${recipientEmail} (Campaign ID: ${campaignId || 'N/A'})`,
+    );
 
     // Return a success response
     return NextResponse.json({ success: true });
