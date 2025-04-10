@@ -63,7 +63,7 @@ const DownloadPage = () => {
     if (downloadStarted) return;
 
     setDownloadStarted(true);
-    handleDownload();
+    handlePlatformDownload(os || 'unknown');
   };
 
   const getOsIcon = () => {
