@@ -25,7 +25,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
-import { sendFeedbackNotificationEmail } from '@/app/services/email';
 
 // Add this new type for our feedback data
 type Feedback = {
@@ -43,27 +42,25 @@ export default function FeedbackPage() {
   const [feedbackType, setFeedbackType] = useState('');
   const [message, setMessage] = useState('');
 
-  const supabase = useSupabaseBrowser();
   const queryClient = useQueryClient();
 
-  // Mutation for submitting feedback
+  // Mutation for submitting feedback using the API endpoint
   const { mutate: submitFeedback, isPending: isSubmitting } = useMutation({
     mutationFn: async (newFeedback: Omit<Feedback, 'id' | 'created_at'>) => {
-      const { error } = await supabase.from('feedback').insert(newFeedback);
-      if (error) throw error;
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newFeedback),
+      });
 
-      // Send email notification
-      try {
-        await sendFeedbackNotificationEmail(
-          newFeedback.name,
-          newFeedback.email,
-          newFeedback.feedback_type,
-          newFeedback.message,
-        );
-      } catch (emailError) {
-        console.error('Error sending feedback notification email:', emailError);
-        // Don't throw the error here to avoid failing the entire submission
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit feedback');
       }
+
+      return response.json();
     },
   });
 
@@ -71,7 +68,7 @@ export default function FeedbackPage() {
     e.preventDefault();
 
     submitFeedback(
-      { name: `iTracksy:${name}`, email, feedback_type: feedbackType, message },
+      { name, email, feedback_type: feedbackType, message },
       {
         onSuccess: () => {
           // Reset form
