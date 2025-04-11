@@ -25,6 +25,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
+import { sendFeedbackNotificationEmail } from '@/app/services/email';
 
 // Add this new type for our feedback data
 type Feedback = {
@@ -50,6 +51,19 @@ export default function FeedbackPage() {
     mutationFn: async (newFeedback: Omit<Feedback, 'id' | 'created_at'>) => {
       const { error } = await supabase.from('feedback').insert(newFeedback);
       if (error) throw error;
+
+      // Send email notification
+      try {
+        await sendFeedbackNotificationEmail(
+          newFeedback.name,
+          newFeedback.email,
+          newFeedback.feedback_type,
+          newFeedback.message,
+        );
+      } catch (emailError) {
+        console.error('Error sending feedback notification email:', emailError);
+        // Don't throw the error here to avoid failing the entire submission
+      }
     },
   });
 

@@ -4,15 +4,11 @@ import WelcomeEmail from '../../emails/WelcomeEmail';
 import InactivityEmail from '../../emails/InactivityEmail';
 import ProductUpdateEmail from '../../emails/ProductUpdateEmail';
 import { OTPEmail } from '../../emails/OTPEmail';
+import FeedbackNotificationEmail from '../../emails/FeedbackNotificationEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const devEmail = 'hth321@gmail.com';
-const adminEmails = [
-  'hunghero321@gmail.com',
-  'hth321@gmail.com',
-  'pvhieu30@gmail.com',
-];
 
 // New common function to send emails with retry logic
 async function sendEmailWithRetry(
@@ -20,6 +16,7 @@ async function sendEmailWithRetry(
     to: string;
     subject: string;
     react: React.ReactNode;
+    from?: string;
     tags?: { name: string; value: string }[];
   },
   maxRetries = 3,
@@ -29,8 +26,8 @@ async function sendEmailWithRetry(
   while (retries < maxRetries) {
     try {
       const { data, error } = await resend.emails.send({
-        from: 'iTracksy <noreply@itracksy.com>',
         ...emailOptions,
+        from: emailOptions.from || 'iTracksy <support@buddybeep.com>',
       });
 
       if (error) {
@@ -127,6 +124,39 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
     console.error('Failed to send OTP email:', emailError);
   }
 }
+
+export async function sendFeedbackNotificationEmail(
+  name: string,
+  email: string,
+  feedbackType: string,
+  message: string,
+) {
+  const toEmail = isDevelopment ? devEmail : 'support@buddybeep.com';
+  console.log(
+    '[sendFeedbackNotificationEmail] Sending feedback notification to:',
+    toEmail,
+  );
+
+  try {
+    await sendEmailWithRetry({
+      to: toEmail,
+      subject: `New Feedback: ${feedbackType} from ${name}`,
+      react: FeedbackNotificationEmail({ name, email, feedbackType, message }),
+      tags: [
+        { name: 'email_type', value: 'feedback_notification' },
+        { name: 'feedback_type', value: feedbackType },
+      ],
+    });
+
+    if (isDevelopment) {
+      console.log('Feedback notification email sent successfully');
+    }
+  } catch (error) {
+    console.error('Failed to send feedback notification email:', error);
+    throw error;
+  }
+}
+
 const sanitizedToEmail = (toEmail: string) => {
   return toEmail ? toEmail.replace(/[^\w-]/g, '_') : 'there';
 };
