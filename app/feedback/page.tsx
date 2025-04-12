@@ -24,7 +24,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
-import { useSupabaseBrowser } from '@/lib/supabase/client';
 
 // Add this new type for our feedback data
 type Feedback = {
@@ -41,8 +40,6 @@ export default function FeedbackPage() {
   const [email, setEmail] = useState('');
   const [feedbackType, setFeedbackType] = useState('');
   const [message, setMessage] = useState('');
-
-  const queryClient = useQueryClient();
 
   // Mutation for submitting feedback using the API endpoint
   const { mutate: submitFeedback, isPending: isSubmitting } = useMutation({

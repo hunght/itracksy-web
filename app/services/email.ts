@@ -6,7 +6,7 @@ import ProductUpdateEmail from '../../emails/ProductUpdateEmail';
 import { OTPEmail } from '../../emails/OTPEmail';
 import FeedbackNotificationEmail from '../../emails/FeedbackNotificationEmail';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_BUDDYBEEP_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
 const devEmail = 'hth321@gmail.com';
 
@@ -16,7 +16,7 @@ async function sendEmailWithRetry(
     to: string;
     subject: string;
     react: React.ReactNode;
-    from?: string;
+
     tags?: { name: string; value: string }[];
   },
   maxRetries = 3,
@@ -27,7 +27,7 @@ async function sendEmailWithRetry(
     try {
       const { data, error } = await resend.emails.send({
         ...emailOptions,
-        from: emailOptions.from || 'iTracksy <support@buddybeep.com>',
+        from: 'iTracksy <support@buddybeep.com>',
       });
 
       if (error) {
