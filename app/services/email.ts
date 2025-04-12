@@ -131,15 +131,43 @@ export async function sendFeedbackNotificationEmail(
   feedbackType: string,
   message: string,
 ) {
-  const toEmail = isDevelopment ? devEmail : 'support@buddybeep.com';
+  // Send confirmation to the user who submitted feedback
+  const toEmail = isDevelopment ? devEmail : email;
+
   console.log(
-    '[sendFeedbackNotificationEmail] Sending feedback notification to:',
+    '[sendFeedbackNotificationEmail] Sending feedback confirmation to:',
     toEmail,
   );
 
   try {
     await sendEmailWithRetry({
       to: toEmail,
+      subject: `Thank you for your feedback, ${name}!`,
+      react: FeedbackNotificationEmail({ name, email, feedbackType, message }),
+      tags: [
+        { name: 'email_type', value: 'feedback_confirmation' },
+        { name: 'feedback_type', value: feedbackType },
+        { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
+      ],
+    });
+
+    if (isDevelopment) {
+      console.log('Feedback confirmation email sent successfully');
+    }
+  } catch (error) {
+    console.error('Failed to send feedback confirmation email:', error);
+    throw error;
+  }
+
+  const supportEmail = isDevelopment ? devEmail : 'support@buddybeep.com';
+  console.log(
+    '[sendFeedbackNotificationEmail] Sending feedback notification to:',
+    supportEmail,
+  );
+
+  try {
+    await sendEmailWithRetry({
+      to: supportEmail,
       subject: `New Feedback: ${feedbackType} from ${name}`,
       react: FeedbackNotificationEmail({ name, email, feedbackType, message }),
       tags: [
