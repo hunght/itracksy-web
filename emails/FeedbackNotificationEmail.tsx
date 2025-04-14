@@ -1,3 +1,4 @@
+import { siteConfig } from '@/config/site';
 import {
   Body,
   Container,
@@ -57,7 +58,10 @@ export const FeedbackNotificationEmail: React.FC<
           If you have any additional comments or questions, feel free to reply
           to this email or join our community.
         </Text>
-        <Button href="https://discord.gg/itracksy" style={button}>
+        <Button
+          onClick={() => window.open(siteConfig.links.discord, '_blank')}
+          style={button}
+        >
           Join Our Discord
         </Button>
         <Text style={footer}>The iTracksy Team</Text>
