@@ -21,13 +21,23 @@ import { DownloadNowButton } from '@/components/download-now-button';
 import { PlatformDownloads } from '@/components/platform-downloads';
 
 import { siteConfig } from '@/config/site';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import { useEffect, useState, useRef } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import { type CarouselApi } from '@/components/ui/carousel';
+import { AutoPlayCarousel } from '@/components/AutoPlayCarousel';
 
 const description =
   'iTracksy: Open-source time tracking application for personal and team productivity. Track your time, analyze performance, and boost productivity with our free, privacy-focused desktop app for Windows, macOS, and Linux.';
 
 export const metadata: Metadata = {
-  title:
-    'iTracksy: Free Open-Source Time Tracking Application for Teams & Individuals',
+  title: 'iTracksy: Free Open-Source Time Tracking Application for Individuals',
   description: description,
   keywords:
     'time tracking, productivity, open-source, desktop app, team productivity, time management, project tracking, work hours, time analytics, free time tracker',
@@ -79,7 +89,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function Home() {
+export default function Home() {
   const latestPosts = sortPosts(posts).slice(0, 5);
 
   return (
@@ -180,18 +190,47 @@ export default async function Home() {
                     <div className="absolute -left-4 -right-4 -top-4 bottom-4 z-0 rounded-full bg-amber-500"></div>
 
                     <div className="relative z-10">
-                      <div
-                        className="relative overflow-hidden rounded-lg border border-slate-200 shadow-xl"
-                        style={{ paddingBottom: '56.25%', height: 0 }}
-                      >
-                        <iframe
-                          src="https://www.youtube.com/embed/MG3s-c4Lxbo"
-                          title="iTracksy: Free Open-Source Time Tracking Application"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="absolute left-0 top-0 h-full w-full"
-                          loading="lazy"
-                        ></iframe>
+                      <div className="relative overflow-hidden rounded-lg border border-slate-200 shadow-xl">
+                        <AutoPlayCarousel
+                          className="overflow-hidden rounded-lg"
+                          interval={5000}
+                        >
+                          {[
+                            {
+                              src: '/screenshots/time-analytics.png',
+                              alt: 'iTracksy Time Analytics Dashboard',
+                            },
+                            {
+                              src: '/screenshots/activity-tracking.png',
+                              alt: 'iTracksy Activity Tracking Interface',
+                            },
+                            {
+                              src: '/screenshots/project-management.png',
+                              alt: 'iTracksy Project Management',
+                            },
+                            {
+                              src: '/screenshots/achievements.png',
+                              alt: 'iTracksy Achievement System',
+                            },
+                            {
+                              src: '/screenshots/rule-classification.png',
+                              alt: 'iTracksy Rule Classification System',
+                            },
+                          ].map((image, index) => (
+                            <CarouselItem key={index}>
+                              <div className="p-1">
+                                <Image
+                                  src={image.src}
+                                  alt={image.alt}
+                                  width={800}
+                                  height={500}
+                                  priority={index === 0}
+                                  className="w-full"
+                                />
+                              </div>
+                            </CarouselItem>
+                          ))}
+                        </AutoPlayCarousel>
                       </div>
                     </div>
                   </div>
@@ -202,27 +241,33 @@ export default async function Home() {
 
           <section
             className="features-section bg-slate-800 py-16 text-white"
-            aria-label="Key benefits section"
+            aria-label="Key features section"
           >
             <div className="container mx-auto px-4">
               <div className="mb-6 text-center">
                 <h3 className="text-lg font-medium text-slate-300">
-                  CHOOSING ITRACKSY MEANS
+                  POWERFUL FEATURES
                 </h3>
               </div>
               <div className="mb-12 text-center">
                 <h2 className="text-4xl font-bold">
                   <span className="text-amber-500">
-                    Productive, Light, Free and Private
+                    Everything You Need to Boost Productivity
                   </span>
                 </h2>
               </div>
 
-              <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between">
-                {/* Left side - Features */}
-                <div className="flex flex-col space-y-10 md:w-1/2">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 text-white">
+              {/* Activity Tracking Feature */}
+              <div className="mb-24 flex flex-col items-center md:flex-row md:items-start md:justify-between">
+                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
+                  <h3 className="text-2xl font-bold">Activity Tracking</h3>
+                  <p className="text-slate-300">
+                    Track your work sessions effortlessly. iTracksy
+                    automatically captures your activities, helping you
+                    understand where your time goes without manual input.
+                  </p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -233,33 +278,13 @@ export default async function Home() {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
                       >
-                        <rect
-                          x="2"
-                          y="3"
-                          width="20"
-                          height="14"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <line x1="8" y1="21" x2="16" y2="21"></line>
-                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                        <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                    </div>
-                    <div>
-                      <h3 className="mb-2 text-xl font-semibold">
-                        Track Time Effortlessly
-                      </h3>
-                      <p className="text-slate-300">
-                        Simple interface designed to track your work seamlessly.
-                        Focus on your tasks while iTracksy handles the time
-                        tracking.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 text-white">
+                      <span>Automatic activity detection</span>
+                    </li>
+                    <li className="flex items-start">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -270,25 +295,13 @@ export default async function Home() {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
                       >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
+                        <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                    </div>
-                    <div>
-                      <h3 className="mb-2 text-xl font-semibold">
-                        Insightful Reports
-                      </h3>
-                      <p className="text-slate-300">
-                        Get detailed insights about how you spend your time with
-                        visual reports and analytics to optimize your
-                        productivity.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500 text-white">
+                      <span>Focus session tracking</span>
+                    </li>
+                    <li className="flex items-start">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="20"
@@ -299,44 +312,334 @@ export default async function Home() {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
                       >
-                        <rect
-                          x="2"
-                          y="5"
-                          width="20"
-                          height="14"
-                          rx="2"
-                          ry="2"
-                        ></rect>
-                        <path d="M2 10h20"></path>
+                        <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                    </div>
-                    <div>
-                      <h3 className="mb-2 text-xl font-semibold">
-                        Open Source and Privacy-Focused
-                      </h3>
-                      <p className="text-slate-300">
-                        As an open-source application, iTracksy respects your
-                        privacy. Your data stays local and under your control at
-                        all times.
-                      </p>
-                    </div>
+                      <span>Seamless background operation</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="md:w-3/5 lg:w-1/2">
+                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
+                    <Image
+                      src="/screenshots/activity-tracking.png"
+                      alt="Activity tracking interface in iTracksy"
+                      width={800}
+                      height={500}
+                      className="w-full"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Right side - SVG illustration */}
-                <div className="mt-8 md:mt-0 md:w-1/2">
-                  <div className="relative">
-                    <div className="relative flex items-center justify-center">
-                      <div className="absolute -left-4 -right-4 -top-4 bottom-4 z-0 rounded-lg  "></div>
-                      <Image
-                        src="/digital-nomad.svg"
-                        alt="Digital nomad working with iTracksy for time management"
-                        width={500}
-                        height={400}
-                        className="relative z-10 rounded-lg bg-amber-500"
-                      />
-                    </div>
+              {/* Project Management Feature */}
+              <div className="mb-24 flex flex-col-reverse items-center md:flex-row md:items-start md:justify-between">
+                <div className="md:w-3/5 lg:w-1/2">
+                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
+                    <Image
+                      src="/screenshots/project-management.png"
+                      alt="Project management kanban board in iTracksy"
+                      width={800}
+                      height={500}
+                      className="w-full"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
+                  <h3 className="text-2xl font-bold">Project Management</h3>
+                  <p className="text-slate-300">
+                    Organize tasks with an intuitive kanban board. Drag and drop
+                    cards between columns to update status and keep your
+                    projects moving forward.
+                  </p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Intuitive drag-and-drop interface</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Custom workflow columns</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Time tracking integration</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Time Analytics Feature */}
+              <div className="mb-24 flex flex-col items-center md:flex-row md:items-start md:justify-between">
+                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
+                  <h3 className="text-2xl font-bold">Time Analytics</h3>
+                  <p className="text-slate-300">
+                    Gain insights from powerful analytics. Visualize how you
+                    spend your time with beautiful, interactive charts that
+                    reveal productivity patterns.
+                  </p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Interactive data visualization</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Productivity trend analysis</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Customizable reporting periods</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="md:w-3/5 lg:w-1/2">
+                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
+                    <Image
+                      src="/screenshots/time-analytics.png"
+                      alt="Time analytics dashboard in iTracksy"
+                      width={800}
+                      height={500}
+                      className="w-full"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievements Feature */}
+              <div className="mb-24 flex flex-col-reverse items-center md:flex-row md:items-start md:justify-between">
+                <div className="md:w-3/5 lg:w-1/2">
+                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
+                    <Image
+                      src="/screenshots/achievements.png"
+                      alt="Achievement system in iTracksy"
+                      width={800}
+                      height={500}
+                      className="w-full"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
+                  <h3 className="text-2xl font-bold">Achievements</h3>
+                  <p className="text-slate-300">
+                    Stay motivated with gamification. Unlock achievements as you
+                    reach productivity milestones, making productivity
+                    improvement fun and rewarding.
+                  </p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Productivity milestone badges</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Progress tracking</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Motivational reward system</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Rule-Based Classification Feature */}
+              <div className="flex flex-col items-center md:flex-row md:items-start md:justify-between">
+                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
+                  <h3 className="text-2xl font-bold">
+                    Rule-Based Classification
+                  </h3>
+                  <p className="text-slate-300">
+                    Customize how activities are categorized. Create rules to
+                    automatically classify your work based on application names,
+                    websites, or custom patterns.
+                  </p>
+                  <ul className="space-y-2 text-slate-300">
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Custom categorization rules</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Pattern matching for applications</span>
+                    </li>
+                    <li className="flex items-start">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-2 mt-1 text-amber-500"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>Website-based activity grouping</span>
+                    </li>
+                  </ul>
+                </div>
+                <div className="md:w-3/5 lg:w-1/2">
+                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
+                    <Image
+                      src="/screenshots/rule-classification.png"
+                      alt="Rule-based classification interface in iTracksy"
+                      width={800}
+                      height={500}
+                      className="w-full"
+                      loading="lazy"
+                    />
                   </div>
                 </div>
               </div>
