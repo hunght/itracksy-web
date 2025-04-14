@@ -5,7 +5,6 @@ import InactivityEmail from '../../emails/InactivityEmail';
 import ProductUpdateEmail from '../../emails/ProductUpdateEmail';
 import { OTPEmail } from '../../emails/OTPEmail';
 import FeedbackNotificationEmail from '../../emails/FeedbackNotificationEmail';
-import LaunchEmail from '../../emails/LaunchEmail';
 
 const resend = new Resend(process.env.RESEND_BUDDYBEEP_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -184,44 +183,6 @@ export async function sendFeedbackNotificationEmail(
     console.error('Failed to send feedback notification email:', error);
     throw error;
   }
-}
-
-export async function sendLaunchAnnouncementEmail(
-  userEmail: string,
-  userName: string = 'there',
-  launchPlatform: 'Product Hunt' | 'Uneed' | string = 'Product Hunt',
-  launchUrl: string = 'https://www.producthunt.com/posts/itracksy',
-) {
-  const toEmail = isDevelopment ? devEmail : userEmail;
-  console.log('[sendLaunchAnnouncementEmail] userEmail', userEmail);
-
-  if (toEmail) {
-    try {
-      await sendEmailWithRetry({
-        to: toEmail,
-        subject: `Lend us a hand in spreading iTracksy further!`,
-        react: LaunchEmail({ name: userName, launchPlatform, launchUrl }),
-        tags: [
-          { name: 'email_type', value: 'launch_announcement' },
-          { name: 'launch_platform', value: launchPlatform },
-          { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
-        ],
-      });
-
-      if (isDevelopment) {
-        console.log(
-          `Launch announcement email (${launchPlatform}) sent successfully`,
-        );
-      }
-
-      return true;
-    } catch (error) {
-      console.error(`Failed to send launch announcement email:`, error);
-      throw error;
-    }
-  }
-
-  return false;
 }
 
 const sanitizedToEmail = (toEmail: string) => {
