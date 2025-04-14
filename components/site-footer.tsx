@@ -20,11 +20,11 @@ export function SiteFooter() {
             <a
               target="_blank"
               rel="noreferrer"
-              href={siteConfig.links.twitter}
+              href={siteConfig.links.discord}
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              <span className="sr-only">Twitter</span>
-              <Icons.twitter className="h-5 w-5" />
+              <span className="sr-only">Discord</span>
+              <Icons.discord className="h-5 w-5" />
             </a>
             <a
               target="_blank"
