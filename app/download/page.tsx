@@ -2,29 +2,53 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FaWindows, FaApple, FaLinux, FaDownload } from 'react-icons/fa';
+import {
+  FaWindows,
+  FaApple,
+  FaLinux,
+  FaDownload,
+  FaMobileAlt,
+  FaAndroid,
+} from 'react-icons/fa';
 import Link from 'next/link';
-import { handleDownload, getPlatformDownloadUrl } from '@/utils/handleDownload';
+import { getPlatformDownloadUrl } from '@/utils/handleDownload';
 import { useAppVersion } from '@/hooks/use-app-version';
 import Image from 'next/image';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const DownloadPage = () => {
   const { links, loading, version } = useAppVersion();
   const [os, setOs] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [downloadUrl, setDownloadUrl] = useState('');
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
 
   useEffect(() => {
-    // Detect user's operating system
+    // Detect user's operating system and if it's mobile
     if (typeof window !== 'undefined') {
       const userAgent = window.navigator.userAgent.toLowerCase();
+      const mobileRegex =
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+
+      setIsMobile(mobileRegex.test(userAgent));
+
       if (userAgent.indexOf('windows') !== -1) {
         setOs('windows');
       } else if (userAgent.indexOf('mac') !== -1) {
         setOs('mac');
       } else if (userAgent.indexOf('linux') !== -1) {
         setOs('linux');
+      } else if (userAgent.indexOf('android') !== -1) {
+        setOs('android');
+      } else if (
+        userAgent.indexOf('iphone') !== -1 ||
+        userAgent.indexOf('ipad') !== -1
+      ) {
+        setOs('ios');
       } else {
         setOs('unknown');
       }
@@ -74,6 +98,10 @@ const DownloadPage = () => {
         return <FaApple className="text-4xl" />;
       case 'linux':
         return <FaLinux className="text-4xl" />;
+      case 'android':
+        return <FaAndroid className="text-4xl" />;
+      case 'ios':
+        return <FaMobileAlt className="text-4xl" />;
       default:
         return <FaDownload className="text-4xl" />;
     }
@@ -87,6 +115,10 @@ const DownloadPage = () => {
         return 'macOS';
       case 'linux':
         return 'Linux';
+      case 'android':
+        return 'Android';
+      case 'ios':
+        return 'iOS';
       default:
         return 'your device';
     }
@@ -127,6 +159,50 @@ const DownloadPage = () => {
     setDownloadStarted(true);
   };
 
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Basic email validation
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      setSubscribeError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      // Create a Supabase client
+      const supabase = createClientComponentClient();
+
+      // Save the email to the leads table
+      const { error } = await supabase.from('leads').insert({
+        name: email.split('@')[0], // Extract username part of email as name
+        email: email,
+        phone: 'Not provided', // Default value
+        message: `Mobile app interest (${os} user)`,
+        submission_time: new Date().toISOString(),
+        group: 'mobile-subscribers', // Group for these specific leads
+      });
+
+      if (error) {
+        console.error('Error saving subscription:', error);
+        // If it's a duplicate email error, still show success to the user
+        if (error.code === '23505') {
+          // Unique constraint violation code
+          setSubscribed(true);
+          setSubscribeError('');
+        } else {
+          setSubscribeError('Failed to subscribe. Please try again later.');
+        }
+      } else {
+        // Set state to show success message
+        setSubscribed(true);
+        setSubscribeError('');
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      setSubscribeError('Failed to subscribe. Please try again later.');
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white p-4">
       <motion.div
@@ -158,6 +234,43 @@ const DownloadPage = () => {
           <div className="py-8 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-purple-700"></div>
             <p className="text-gray-600">Loading download information...</p>
+          </div>
+        ) : isMobile ? (
+          <div className="mb-8 rounded-xl bg-purple-50 p-6 text-center">
+            <div className="mb-4 flex items-center justify-center">
+              {getOsIcon()}
+              <span className="ml-3 text-xl font-medium">
+                We detected you&apos;re using {getOsName()}
+              </span>
+            </div>
+            {subscribed ? (
+              <p className="text-green-600">
+                Thank you for subscribing! We&apos;ll notify you when the mobile
+                version is available.
+              </p>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-4">
+                <p className="text-gray-600">
+                  Mobile versions are coming soon! Subscribe to get notified:
+                </p>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full rounded-lg border border-gray-300 p-2"
+                />
+                {subscribeError && (
+                  <p className="text-sm text-red-600">{subscribeError}</p>
+                )}
+                <button
+                  type="submit"
+                  className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition duration-300 hover:bg-purple-700"
+                >
+                  Subscribe
+                </button>
+              </form>
+            )}
           </div>
         ) : (
           <>
