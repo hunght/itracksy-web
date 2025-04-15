@@ -36,19 +36,20 @@ const DownloadPage = () => {
 
       setIsMobile(mobileRegex.test(userAgent));
 
-      if (userAgent.indexOf('windows') !== -1) {
-        setOs('windows');
-      } else if (userAgent.indexOf('mac') !== -1) {
-        setOs('mac');
-      } else if (userAgent.indexOf('linux') !== -1) {
-        setOs('linux');
-      } else if (userAgent.indexOf('android') !== -1) {
+      // Check for mobile platforms first, then desktop platforms
+      if (userAgent.indexOf('android') !== -1) {
         setOs('android');
       } else if (
         userAgent.indexOf('iphone') !== -1 ||
         userAgent.indexOf('ipad') !== -1
       ) {
         setOs('ios');
+      } else if (userAgent.indexOf('windows') !== -1) {
+        setOs('windows');
+      } else if (userAgent.indexOf('mac') !== -1) {
+        setOs('mac');
+      } else if (userAgent.indexOf('linux') !== -1) {
+        setOs('linux');
       } else {
         setOs('unknown');
       }

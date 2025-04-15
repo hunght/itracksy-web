@@ -21,11 +21,7 @@ import { PlatformDownloads } from '@/components/platform-downloads';
 
 import { siteConfig } from '@/config/site';
 import { appScreenshots } from '@/config/screenshots';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from '@/components/ui/carousel';
+import { CarouselItem } from '@/components/ui/carousel';
 import { AutoPlayCarousel } from '@/components/AutoPlayCarousel';
 import { GitHubButton } from '@/components/github-button';
 import { EmailSubscriptionForm } from '@/components/email-subscription-form';
