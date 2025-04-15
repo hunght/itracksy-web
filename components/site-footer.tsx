@@ -11,15 +11,6 @@ export function SiteFooter() {
             <a
               target="_blank"
               rel="noreferrer"
-              href="mailto:support@buddybeep.com"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <span className="sr-only">Mail</span>
-              <Mail className="h-5 w-5" />
-            </a>
-            <a
-              target="_blank"
-              rel="noreferrer"
               href={siteConfig.links.discord}
               className="text-muted-foreground transition-colors hover:text-foreground"
             >

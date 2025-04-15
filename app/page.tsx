@@ -905,14 +905,6 @@ export default function Home() {
               </div>
 
               <div className="mt-6 flex flex-col items-center space-y-4">
-                <Link
-                  href="/blog/use-cases"
-                  className="text-primary hover:underline"
-                  aria-label="Read about iTracksy use cases"
-                >
-                  See how others are using iTracksy
-                </Link>
-
                 <div className="mt-2 flex items-center space-x-6">
                   <GitHubButton
                     href={siteConfig.links.github}
