@@ -1,7 +1,6 @@
 import { sortPosts } from '@/lib/utils';
 import { posts } from '#site/content';
 import { PostItem } from '@/components/post-item';
-import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
@@ -26,11 +25,10 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from '@/components/ui/carousel';
 import { AutoPlayCarousel } from '@/components/AutoPlayCarousel';
 import { GitHubButton } from '@/components/github-button';
+import { EmailSubscriptionForm } from '@/components/email-subscription-form';
 
 const description =
   'iTracksy: Open-source time tracking application for personal and team productivity. Track your time, analyze performance, and boost productivity with our free, privacy-focused desktop app for Windows, macOS, and Linux.';
@@ -893,6 +891,23 @@ export default function Home() {
               <DownloadNowButton size="lg">
                 Download iTracksy Now
               </DownloadNowButton>
+
+              {/* Email Subscription Component */}
+              <div className="mt-8 text-center">
+                <p className="mb-4 text-lg font-medium">
+                  Or subscribe for updates
+                </p>
+                <div className="mx-auto max-w-md">
+                  <div className="relative">
+                    <EmailSubscriptionForm />
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    We&apos;ll notify you about new features, updates, and
+                    mobile app releases.
+                  </p>
+                </div>
+              </div>
+
               <div className="mt-6 flex flex-col items-center space-y-4">
                 <Link
                   href="/blog/use-cases"
