@@ -32,6 +32,7 @@ export function AutoPlayCarousel({
   const [api, setApi] = useState<CarouselApi | undefined>(undefined);
   const [isPaused, setIsPaused] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   // Check if we're on mobile
   useEffect(() => {
@@ -49,15 +50,27 @@ export function AutoPlayCarousel({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Set carousel as ready after a short delay
   useEffect(() => {
-    if (!api || isPaused) return;
+    if (!api) return;
+
+    // Wait for carousel to be fully initialized before enabling autoplay
+    const readyTimer = setTimeout(() => {
+      setIsReady(true);
+    }, 1000); // 1 second delay before enabling autoplay
+
+    return () => clearTimeout(readyTimer);
+  }, [api]);
+
+  useEffect(() => {
+    if (!api || !isReady || isPaused) return;
 
     const intervalId = setInterval(() => {
       api.scrollNext();
     }, interval);
 
     return () => clearInterval(intervalId);
-  }, [api, interval, isPaused]);
+  }, [api, interval, isPaused, isReady]);
 
   const handleMouseEnter = () => setIsPaused(true);
   const handleMouseLeave = () => setIsPaused(false);
