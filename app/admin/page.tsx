@@ -5,6 +5,7 @@ import UserSelectionTable from './components/UserSelectionTable';
 
 import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { isUserAdmin } from '@/lib/auth';
 
 export default async function AdminUserList({
   searchParams,
@@ -16,12 +17,17 @@ export default async function AdminUserList({
   const page = parseInt(searchParams.page || '1', 10);
   const pageSize = parseInt(searchParams.pageSize || '50', 10);
 
-  // Check if the user is an admin
+  // Check if the user is authenticated
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user?.id) {
     redirect('/login');
+  }
+
+  // Check if the user has admin privileges
+  if (!isUserAdmin(user)) {
+    redirect('/');
   }
 
   console.log('user', user);

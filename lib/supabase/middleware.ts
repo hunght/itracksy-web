@@ -1,6 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { Database } from '../supabase';
+import { Database } from '@/lib/supabase';
+import { isUserAdmin } from '@/lib/auth';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -60,11 +61,26 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Check if the request is for the dashboard or account pages
-  if (
-    request.nextUrl.pathname.startsWith('/admin') ||
-    request.nextUrl.pathname.startsWith('/account')
-  ) {
+  // Check if the request is for admin pages
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    // If there's no user, redirect to the login page
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.searchParams.set(`redirectedFrom`, request.nextUrl.pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // If user is not admin, redirect to homepage
+    if (!isUserAdmin(user)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/';
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Check if the request is for the account pages
+  if (request.nextUrl.pathname.startsWith('/account')) {
     // If there's no user, redirect to the login page
     if (!user) {
       const redirectUrl = request.nextUrl.clone();
