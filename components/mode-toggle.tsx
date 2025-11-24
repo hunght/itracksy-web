@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +12,21 @@ import { Button } from './ui/button';
 import { Moon, Sun, Laptop } from 'lucide-react';
 
 export function ModeToggle() {
+  const [mounted, setMounted] = useState(false);
   const { setTheme, theme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <Button variant="outline" size="icon" className="rounded-full">
+        <Sun className="h-[1.2rem] w-[1.2rem]" />
+        <span className="sr-only">Toggle Theme</span>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

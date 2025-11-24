@@ -219,6 +219,103 @@ export default function Home() {
             </div>
           </section>
 
+          {/* LearnifyTube Promotional Banner */}
+          <section
+            className="learnifytube-promo-section bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 py-12"
+            aria-label="LearnifyTube Promotion"
+          >
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col items-center gap-6 md:flex-row md:justify-between">
+                {/* Left side - Icon and Content */}
+                <div className="flex flex-col items-center gap-6 md:flex-row md:items-center">
+                  <div className="relative h-24 w-24 flex-shrink-0">
+                    <Image
+                      src="/learnifytube-icon.png"
+                      alt="LearnifyTube App Icon"
+                      width={96}
+                      height={96}
+                      className="rounded-2xl shadow-lg"
+                    />
+                  </div>
+                  <div className="text-center md:text-left">
+                    <div className="mb-2 flex items-center justify-center gap-2 md:justify-start">
+                      <h3 className="text-2xl font-bold text-white">
+                        LearnifyTube
+                      </h3>
+                      <span className="rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white">
+                        NEW
+                      </span>
+                    </div>
+                    <p className="mb-2 text-lg text-white/90">
+                      Download & Play YouTube Videos Offline
+                    </p>
+                    <p className="max-w-2xl text-sm text-white/80">
+                      Never worry about internet connectivity again! Download
+                      your favorite educational content, focus music, and
+                      tutorials. Perfect companion for iTracksy users who want
+                      uninterrupted productivity sessions.
+                    </p>
+                    <div className="mt-3 flex flex-wrap justify-center gap-2 md:justify-start">
+                      <span className="rounded-md bg-white/20 px-3 py-1 text-xs text-white">
+                        📥 Offline Access
+                      </span>
+                      <span className="rounded-md bg-white/20 px-3 py-1 text-xs text-white">
+                        🎵 High Quality
+                      </span>
+                      <span className="rounded-md bg-white/20 px-3 py-1 text-xs text-white">
+                        ⚡ Easy to Use
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right side - CTA Button */}
+                <div className="flex flex-col items-center gap-3">
+                  <Link
+                    href="https://www.learnifytube.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative inline-flex items-center gap-2 overflow-hidden rounded-lg bg-white px-8 py-4 text-lg font-semibold text-purple-600 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-transform group-hover:scale-110"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" x2="12" y1="15" y2="3"></line>
+                    </svg>
+                    Get LearnifyTube
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-transform group-hover:translate-x-1"
+                    >
+                      <path d="M5 12h14"></path>
+                      <path d="m12 5 7 7-7 7"></path>
+                    </svg>
+                  </Link>
+                  <p className="text-xs text-white/70">Free to Download</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section
             className="features-section bg-slate-800 py-16 text-white"
             aria-label="Key features section"
