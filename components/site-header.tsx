@@ -23,7 +23,7 @@ export function SiteHeader({ isLoginPage = false }: SiteHeaderProps) {
               height={72}
               className="h-10 w-auto"
             />
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text">
               iTracksy
             </span>
           </Link>
