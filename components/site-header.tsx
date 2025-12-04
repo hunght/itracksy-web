@@ -15,14 +15,17 @@ export function SiteHeader({ isLoginPage = false }: SiteHeaderProps) {
     <header className="sticky top-0 z-10 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2">
+          <Link href="/" className="flex items-center space-x-3">
             <Image
               src="/logo.png"
-              alt="TRACKSY"
+              alt="iTracksy"
               width={72}
               height={72}
               className="h-10 w-auto"
             />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              iTracksy
+            </span>
           </Link>
         </div>
         <div className="flex items-center space-x-6">
