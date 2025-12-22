@@ -19,6 +19,15 @@ const DEV_EMAIL = 'hth321@gmail.com';
 
 export async function POST(request: Request) {
   try {
+    // Validate Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not configured');
+      return NextResponse.json(
+        { error: 'Email service is not configured' },
+        { status: 500 },
+      );
+    }
+
     // Initialize Supabase client
     const supabase = createAdminClient();
 
@@ -34,6 +43,13 @@ export async function POST(request: Request) {
         { error: 'Failed to fetch campaigns' },
         { status: 500 },
       );
+    }
+
+    if (!campaigns || campaigns.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No active campaigns to process',
+      });
     }
 
     // Process the campaigns and await the result
@@ -116,6 +132,32 @@ async function processCampaignsInBackground(
           continue;
         }
 
+        // Validate email template exists
+        const emailTemplate = campaign.email_template as TemplateType;
+        if (!emailTemplate || !EMAIL_TEMPLATES[emailTemplate]) {
+          console.error(
+            `Invalid email template "${emailTemplate}" for campaign ${campaign.id}`,
+          );
+          continue;
+        }
+
+        // Validate email address
+        if (!campaignLead.lead.email) {
+          console.error(
+            `Missing email address for lead ${campaignLead.lead.id}`,
+          );
+          continue;
+        }
+
+        // Get the email template component
+        const EmailTemplate = EMAIL_TEMPLATES[emailTemplate];
+        if (typeof EmailTemplate !== 'function') {
+          console.error(
+            `Email template "${emailTemplate}" is not a valid function`,
+          );
+          continue;
+        }
+
         // Send email using Resend
         const { data: emailData, error: emailError } = await resend.emails.send(
           {
@@ -124,12 +166,12 @@ async function processCampaignsInBackground(
             subject: isDevelopment
               ? `[TEST] ${campaign.email_subject}`
               : campaign.email_subject,
-            react: EMAIL_TEMPLATES[campaign.email_template as TemplateType]({
-              name: campaignLead.lead.name,
+            react: EmailTemplate({
+              name: campaignLead.lead.name || 'there',
             }),
             tags: [
-              { name: 'lead_id', value: campaignLead.lead.id },
-              { name: 'campaign_id', value: campaign.id },
+              { name: 'lead_id', value: String(campaignLead.lead.id) },
+              { name: 'campaign_id', value: String(campaign.id) },
             ],
           },
         );
