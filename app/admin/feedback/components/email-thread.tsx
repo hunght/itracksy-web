@@ -74,7 +74,8 @@ export function EmailThread({ feedbackId }: EmailThreadProps) {
   const { data: emails = [], isLoading } = useQuery<EmailThread[]>({
     queryKey: ['email-thread', feedbackId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Type assertion needed until Supabase types are regenerated
+      const { data, error } = await (supabase as any)
         .from('email_threads')
         .select('*')
         .eq('feedback_id', feedbackId)

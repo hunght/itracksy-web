@@ -88,7 +88,8 @@ export default function InboxPage() {
   } = useQuery<Email[]>({
     queryKey: ['inbox-emails', filter],
     queryFn: async () => {
-      let query = supabase
+      // Type assertion needed until Supabase types are regenerated
+      let query = (supabase as any)
         .from('email_threads')
         .select('*')
         .order('created_at', { ascending: false });
@@ -110,7 +111,8 @@ export default function InboxPage() {
   // Mark email as read
   const markAsRead = useMutation({
     mutationFn: async (emailId: string) => {
-      const { error } = await supabase
+      // Type assertion needed until Supabase types are regenerated
+      const { error } = await (supabase as any)
         .from('email_threads')
         .update({ is_read: true })
         .eq('id', emailId);
