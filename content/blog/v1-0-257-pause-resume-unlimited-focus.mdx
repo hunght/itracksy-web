@@ -1,0 +1,153 @@
+---
+title: "New Release v1.0.257: Pause Your Focus Sessions & Enhanced Unlimited Tracking"
+description: "Introducing manual pause/resume for focus sessions, redesigned unlimited focus mode with continuous background tracking, and improved UI for a better productivity experience."
+date: 2026-01-09
+tags: ['release', 'focus sessions', 'productivity', 'pause resume', 'unlimited tracking', 'new features']
+published: true
+thumbnail: /blog/pause-resume-session.png
+thumbnail_alt_text: 'iTracksy focus session with new pause button and timer display'
+---
+
+# New Release v1.0.257: Pause Your Focus Sessions & Enhanced Unlimited Tracking
+
+We're excited to announce **iTracksy v1.0.257** with highly requested features that make your productivity tracking more flexible than ever!
+
+## What's New
+
+### 1. Manual Pause & Resume for Focus Sessions
+
+**Finally, you can pause your focus sessions!**
+
+We heard your feedback - sometimes you need to step away briefly without ending your entire session. Now you have full control:
+
+![Pause and Resume Focus Session](/blog/pause-resume-session.png)
+*New pause button lets you take breaks without losing your session progress*
+
+#### How It Works
+
+- **PAUSE**: Click to pause your session when you need a quick break
+- **RESUME**: Continue right where you left off
+- **Time Excluded**: Paused time is automatically excluded from your session duration
+- **Visual Indicator**: Clear "PAUSED" indicator shows when your session is on hold
+
+#### Key Benefits
+
+- Take urgent calls without ending your focus session
+- Handle quick interruptions gracefully
+- Your productivity stats remain accurate - paused time doesn't count
+- Works for both Focus and Break sessions
+
+---
+
+### 2. Redesigned Unlimited Focus Mode
+
+**Track your work all day, effortlessly.**
+
+We've completely redesigned the Unlimited Focus mode to make it more visible and easier to use:
+
+![Unlimited Focus Mode](/blog/unlimited-focus-mode.png)
+*Clear mode selector: Choose between Timed sessions or Unlimited tracking*
+
+#### New Mode Selector
+
+Instead of a small toggle, you now have two clear options:
+
+- **Timed** - Set a specific duration for your focus session
+- **Unlimited** - Track continuously throughout the day
+
+#### Continuous Background Tracking
+
+When you select Unlimited mode, you'll see a helpful description explaining:
+
+- Runs silently in the background
+- Auto-starts with app if enabled in System Settings
+- Tracks all your activities throughout the day
+- Stop manually when you're done working
+
+**Perfect for:**
+- Remote workers who want to track their entire workday
+- Freelancers billing by the hour
+- Anyone who wants automatic time tracking without managing sessions
+
+---
+
+### 3. Improved UI & User Experience
+
+#### Cleaner Action Buttons
+
+We've streamlined the active session buttons:
+
+- **+5 MIN** - Extend your session (hidden for unlimited sessions)
+- **PAUSE** - New pause/resume toggle
+- **STOP** - End your session
+
+Removed the redundant CLOCK button for a cleaner interface.
+
+#### Break Sessions Update
+
+- Removed "Unlimited" option for breaks (it didn't make sense - breaks should have a duration!)
+- More compact, consistent design matching the Focus tab
+- Maximum break duration reduced to 1 hour for practicality
+
+---
+
+### 4. Theme & Appearance Fixes
+
+![Dark Mode Settings](/blog/dark-mode-settings.png)
+*Beautiful dark mode with all theme options working correctly*
+
+- Fixed theme variants now applying correctly
+- Light/Dark mode switching works seamlessly
+- All color themes (Ocean, Forest, Lavender, Sunset, Rose, Monochrome) now function properly
+
+---
+
+## How to Use the New Features
+
+### Pausing a Session
+
+1. Start a Focus or Break session
+2. Click the **PAUSE** button when you need to step away
+3. The timer freezes and shows "PAUSED"
+4. Click **RESUME** when you're ready to continue
+5. Your session continues with paused time excluded
+
+### Using Unlimited Focus Mode
+
+1. Go to the Focus tab
+2. Click **Unlimited** in the mode selector
+3. Read the description to understand how it works
+4. Click **START FOCUS**
+5. Work as long as you need
+6. Click **STOP** when you're done for the day
+
+### Auto-Start Setup
+
+Want iTracksy to track automatically when you start your computer?
+
+1. Go to **Settings > System**
+2. Enable **"Start iTracksy automatically when system boots"**
+3. Combined with Unlimited mode, you'll have automatic all-day tracking!
+
+---
+
+## Technical Improvements
+
+- New `manualPause` and `manualResume` tRPC endpoints
+- Pause state properly synced with clock window
+- System-triggered pauses (sleep/lock) distinguished from manual pauses
+- Resume dialog only shows for system pauses, not manual ones
+
+---
+
+## Update Now
+
+This update is **available now**! Your app will auto-update, or you can download the latest version from our website.
+
+**What's your favorite new feature? Let us know!**
+
+---
+
+*Have questions or feedback? We'd love to hear from you. Your input shapes the future of iTracksy!*
+
+**Happy focusing! **
