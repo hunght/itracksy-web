@@ -5,6 +5,7 @@ import InactivityEmail from '../../emails/InactivityEmail';
 import ProductUpdateEmail from '../../emails/ProductUpdateEmail';
 import { OTPEmail } from '../../emails/OTPEmail';
 import FeedbackNotificationEmail from '../../emails/FeedbackNotificationEmail';
+import FeedbackReplyEmail from '../../emails/FeedbackReplyEmail';
 
 const resend = new Resend(process.env.RESEND_BUDDYBEEP_API_KEY);
 const isDevelopment = process.env.NODE_ENV !== 'production';
@@ -188,3 +189,48 @@ export async function sendFeedbackNotificationEmail(
 const sanitizedToEmail = (toEmail: string) => {
   return toEmail ? toEmail.replace(/[^\w-]/g, '_') : 'there';
 };
+
+export async function sendFeedbackReplyEmail({
+  to,
+  subject,
+  message,
+  userName,
+  originalMessage,
+  feedbackType,
+}: {
+  to: string;
+  subject: string;
+  message: string;
+  userName: string;
+  originalMessage: string;
+  feedbackType: string;
+}) {
+  const toEmail = isDevelopment ? devEmail : to;
+
+  console.log('[sendFeedbackReplyEmail] Sending reply to:', toEmail);
+
+  try {
+    await sendEmailWithRetry({
+      to: toEmail,
+      subject,
+      react: FeedbackReplyEmail({
+        userName,
+        message,
+        originalMessage,
+        feedbackType,
+      }),
+      tags: [
+        { name: 'email_type', value: 'feedback_reply' },
+        { name: 'feedback_type', value: feedbackType },
+        { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
+      ],
+    });
+
+    if (isDevelopment) {
+      console.log('Feedback reply email sent successfully');
+    }
+  } catch (error) {
+    console.error('Failed to send feedback reply email:', error);
+    throw error;
+  }
+}
