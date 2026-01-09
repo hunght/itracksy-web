@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS email_threads (
 
   -- Threading
   in_reply_to TEXT,  -- Message-ID of the email this is replying to
-  references TEXT,   -- Full references header for threading
+  "references" TEXT,   -- Full references header for threading
 
   -- Link to feedback
   feedback_id UUID REFERENCES feedback(id) ON DELETE SET NULL,

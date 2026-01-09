@@ -147,6 +147,8 @@ export async function POST(request: Request) {
     }
 
     // Store the email in database
+    // Note: "references" is a reserved keyword in PostgreSQL, so we use the column name directly
+    // Supabase client handles the quoting automatically
     const { data, error } = await supabase.from('email_threads').insert({
       message_id: headers['message-id'] || email.id,
       from_email: sender.email,
@@ -156,7 +158,7 @@ export async function POST(request: Request) {
       body_text: email.text,
       body_html: email.html,
       in_reply_to: headers['in-reply-to'] || null,
-      references: headers.references || null,
+      references: headers.references || null, // Supabase handles reserved keyword quoting
       feedback_id: feedbackId,
       direction: 'inbound',
       is_read: false,
