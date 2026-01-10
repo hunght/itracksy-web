@@ -138,16 +138,17 @@ export async function POST(request: Request) {
     let emailHtml = webhookData.html;
     let headers = webhookData.headers || {};
 
-    // If text/html not in webhook, fetch from Resend API
-    if (!emailText && !emailHtml && webhookData.email_id) {
+    // Webhook doesn't include email body - fetch from Resend Receiving API
+    // See: https://resend.com/docs/dashboard/receiving/get-email-content
+    if (webhookData.email_id) {
       console.log(
-        '[Inbound Email] Fetching email details for:',
+        '[Inbound Email] Fetching email content for:',
         webhookData.email_id,
       );
       try {
-        // Use Resend API to get full email details
+        // Use Resend Receiving API to get full email content
         const response = await fetch(
-          `https://api.resend.com/emails/${webhookData.email_id}`,
+          `https://api.resend.com/emails/receiving/${webhookData.email_id}`,
           {
             headers: {
               Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -158,11 +159,11 @@ export async function POST(request: Request) {
         if (response.ok) {
           const emailDetails: ResendEmailDetails = await response.json();
           console.log(
-            '[Inbound Email] Fetched email details:',
+            '[Inbound Email] Fetched email content:',
             JSON.stringify(emailDetails, null, 2),
           );
-          emailText = emailDetails.text;
-          emailHtml = emailDetails.html;
+          emailText = emailDetails.text || emailText;
+          emailHtml = emailDetails.html || emailHtml;
           if (emailDetails.headers) {
             headers = {
               ...headers,
@@ -171,14 +172,14 @@ export async function POST(request: Request) {
           }
         } else {
           console.error(
-            '[Inbound Email] Failed to fetch email details:',
+            '[Inbound Email] Failed to fetch email content:',
             response.status,
             await response.text(),
           );
         }
       } catch (fetchError) {
         console.error(
-          '[Inbound Email] Error fetching email details:',
+          '[Inbound Email] Error fetching email content:',
           fetchError,
         );
       }
