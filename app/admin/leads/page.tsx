@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { CreateLeadModal } from '@/app/admin/leads/leads/create-lead-modal';
 import { UploadLeadsModal } from '@/app/admin/leads/leads/upload-leads-modal';
+import { ImportFromFeedbackModal } from '@/app/admin/leads/leads/import-from-feedback-modal';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -280,6 +281,7 @@ export default function LeadsPage() {
                   className={cn('h-4 w-4', isLoading && 'animate-spin')}
                 />
               </Button>
+              <ImportFromFeedbackModal />
               <CreateLeadModal />
               <UploadLeadsModal />
             </div>
