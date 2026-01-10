@@ -120,7 +120,7 @@ export default function InboxPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inbox-emails'] });
+      refetch();
     },
   });
 
