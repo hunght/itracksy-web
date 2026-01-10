@@ -17,7 +17,8 @@
     "supabase:pull": "supabase db pull --linked",
     "supabase:start": "supabase start",
     "supabase:reset": "supabase db reset",
-    "supabase:sync": "npm run supabase:pull && npm run supabase:types"
+    "supabase:sync": "npm run supabase:pull && npm run supabase:types",
+    "prepare": "husky"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -78,6 +79,7 @@
     "chrome-types": "^0.1.295",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.5.9",
+    "husky": "^9.1.7",
     "knip": "^5.80.2",
     "postcss": "^8.5.6",
     "prettier-plugin-tailwindcss": "^0.5.14",
