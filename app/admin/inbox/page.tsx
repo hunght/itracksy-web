@@ -1,49 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Inbox,
-  Mail,
   Send,
-  Clock,
-  User,
   RefreshCw,
-  CheckCheck,
-  Circle,
-  ArrowLeft,
+  User,
   Loader2,
-  MailOpen,
+  Inbox,
+  Circle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -62,60 +32,111 @@ type Email = {
   created_at: string;
 };
 
-const formatDate = (dateString: string) => {
+type Conversation = {
+  email: string;
+  name: string | null;
+  lastMessage: string;
+  lastDate: string;
+  unreadCount: number;
+  messages: Email[];
+};
+
+const formatTime = (dateString: string) => {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  } else if (diffDays === 1) {
+    return 'Yesterday';
+  } else if (diffDays < 7) {
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const formatMessageTime = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(date);
+  });
 };
 
 export default function InboxPage() {
   const supabase = useSupabaseBrowser();
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<'all' | 'unread' | 'inbound' | 'outbound'>('all');
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [replyTo, setReplyTo] = useState<Email | null>(null);
-  const [replySubject, setReplySubject] = useState('');
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
     data: emails = [],
     isLoading,
     refetch,
   } = useQuery<Email[]>({
-    queryKey: ['inbox-emails', filter],
+    queryKey: ['inbox-emails'],
     queryFn: async () => {
-      // Type assertion needed until Supabase types are regenerated
-      let query = (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('email_threads')
         .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter === 'unread') {
-        query = query.eq('is_read', false).eq('direction', 'inbound');
-      } else if (filter === 'inbound') {
-        query = query.eq('direction', 'inbound');
-      } else if (filter === 'outbound') {
-        query = query.eq('direction', 'outbound');
-      }
-
-      const { data, error } = await query.limit(100);
+        .order('created_at', { ascending: true });
       if (error) throw error;
       return data as Email[];
     },
   });
 
-  // Mark email as read
+  // Group emails into conversations by email address
+  const conversations: Conversation[] = (() => {
+    const grouped = new Map<string, Email[]>();
+
+    emails.forEach((email) => {
+      const key = email.direction === 'inbound' ? email.from_email : email.to_email;
+      if (!grouped.has(key)) {
+        grouped.set(key, []);
+      }
+      grouped.get(key)!.push(email);
+    });
+
+    return Array.from(grouped.entries())
+      .map(([email, messages]) => {
+        const sortedMessages = messages.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        const lastMessage = sortedMessages[sortedMessages.length - 1];
+        const inboundMessages = messages.filter((m) => m.direction === 'inbound');
+        const name = inboundMessages.find((m) => m.from_name)?.from_name || null;
+        const unreadCount = messages.filter((m) => !m.is_read && m.direction === 'inbound').length;
+
+        return {
+          email,
+          name,
+          lastMessage: lastMessage.body_text || lastMessage.subject || '',
+          lastDate: lastMessage.created_at,
+          unreadCount,
+          messages: sortedMessages,
+        };
+      })
+      .sort((a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime());
+  })();
+
+  const currentConversation = conversations.find((c) => c.email === selectedConversation);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [currentConversation?.messages]);
+
+  // Mark messages as read when conversation is selected
   const markAsRead = useMutation({
-    mutationFn: async (emailId: string) => {
-      // Type assertion needed until Supabase types are regenerated
+    mutationFn: async (emailIds: string[]) => {
       const { error } = await (supabase as any)
         .from('email_threads')
         .update({ is_read: true })
-        .eq('id', emailId);
+        .in('id', emailIds);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -123,23 +144,38 @@ export default function InboxPage() {
     },
   });
 
+  useEffect(() => {
+    if (currentConversation) {
+      const unreadIds = currentConversation.messages
+        .filter((m) => !m.is_read && m.direction === 'inbound')
+        .map((m) => m.id);
+      if (unreadIds.length > 0) {
+        markAsRead.mutate(unreadIds);
+      }
+    }
+  }, [selectedConversation]);
+
   // Send reply
   const sendReply = useMutation({
     mutationFn: async () => {
-      if (!replyTo) throw new Error('No email to reply to');
+      if (!currentConversation) throw new Error('No conversation selected');
+
+      const lastInbound = [...currentConversation.messages]
+        .reverse()
+        .find((m) => m.direction === 'inbound');
 
       const response = await fetch('/api/feedback/reply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          feedbackId: replyTo.feedback_id || 'direct-email',
-          to: replyTo.from_email,
-          subject: replySubject,
+          feedbackId: lastInbound?.feedback_id || 'direct-email',
+          to: currentConversation.email,
+          subject: `Re: ${lastInbound?.subject || 'Your message'}`,
           message: replyMessage,
-          userName: replyTo.from_name || replyTo.from_email,
-          originalMessage: replyTo.body_text || '',
+          userName: currentConversation.name || currentConversation.email,
+          originalMessage: '',
           feedbackType: 'email',
-          inReplyTo: replyTo.message_id,
+          inReplyTo: lastInbound?.message_id,
         }),
       });
 
@@ -151,9 +187,7 @@ export default function InboxPage() {
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: 'Reply sent', description: 'Your reply has been sent successfully.' });
-      setReplyTo(null);
-      setReplySubject('');
+      toast({ title: 'Message sent' });
       setReplyMessage('');
       refetch();
     },
@@ -166,329 +200,185 @@ export default function InboxPage() {
     },
   });
 
-  const handleSelectEmail = (email: Email) => {
-    setSelectedEmail(email);
-    if (!email.is_read && email.direction === 'inbound') {
-      markAsRead.mutate(email.id);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (replyMessage.trim()) {
+        sendReply.mutate();
+      }
     }
   };
 
-  const handleReply = (email: Email) => {
-    setReplyTo(email);
-    setReplySubject(`Re: ${email.subject || 'Your message'}`);
-    setReplyMessage(
-      `Hi ${email.from_name || 'there'},\n\n\n\nBest regards,\niTracksy Team`,
-    );
-  };
-
-  const stats = {
-    total: emails.length,
-    unread: emails.filter((e) => !e.is_read && e.direction === 'inbound').length,
-    inbound: emails.filter((e) => e.direction === 'inbound').length,
-    outbound: emails.filter((e) => e.direction === 'outbound').length,
-  };
+  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Emails</CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unread</CardTitle>
-            <Circle className="h-4 w-4 text-blue-500 fill-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.unread}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Received</CardTitle>
-            <Inbox className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.inbound}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sent</CardTitle>
-            <Send className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.outbound}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Email List */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Inbox className="h-5 w-5" />
-              Email Inbox
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <Select
-                value={filter}
-                onValueChange={(v) => setFilter(v as typeof filter)}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Emails</SelectItem>
-                  <SelectItem value="unread">Unread</SelectItem>
-                  <SelectItem value="inbound">Received</SelectItem>
-                  <SelectItem value="outbound">Sent</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm" onClick={() => refetch()}>
-                <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-              </Button>
-            </div>
+    <div className="flex h-[calc(100vh-12rem)] overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+      {/* Conversations List */}
+      <div className="w-80 flex-shrink-0 border-r">
+        <div className="flex items-center justify-between border-b p-4">
+          <div className="flex items-center gap-2">
+            <Inbox className="h-5 w-5" />
+            <span className="font-semibold">Inbox</span>
+            {totalUnread > 0 && (
+              <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white">
+                {totalUnread}
+              </span>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
+          <Button variant="ghost" size="sm" onClick={() => refetch()}>
+            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
+          </Button>
+        </div>
+
+        <ScrollArea className="h-[calc(100%-4rem)]">
           {isLoading ? (
-            <div className="py-8 text-center text-muted-foreground">Loading emails...</div>
-          ) : emails.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <MailOpen className="mb-4 h-12 w-12" />
-              <p>No emails found</p>
-            </div>
+            <div className="p-4 text-center text-muted-foreground">Loading...</div>
+          ) : conversations.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">No conversations</div>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px]"></TableHead>
-                    <TableHead>From / To</TableHead>
-                    <TableHead>Subject</TableHead>
-                    <TableHead className="w-[150px]">Date</TableHead>
-                    <TableHead className="w-[100px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {emails.map((email) => (
-                    <TableRow
-                      key={email.id}
-                      className={cn(
-                        'cursor-pointer',
-                        !email.is_read &&
-                          email.direction === 'inbound' &&
-                          'bg-blue-50 dark:bg-blue-900/10',
-                      )}
-                      onClick={() => handleSelectEmail(email)}
-                    >
-                      <TableCell>
-                        {email.direction === 'inbound' ? (
-                          email.is_read ? (
-                            <MailOpen className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <Mail className="h-4 w-4 text-blue-500" />
-                          )
-                        ) : (
-                          <Send className="h-4 w-4 text-green-500" />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <p
-                              className={cn(
-                                'text-sm',
-                                !email.is_read &&
-                                  email.direction === 'inbound' &&
-                                  'font-semibold',
-                              )}
-                            >
-                              {email.direction === 'inbound'
-                                ? email.from_name || email.from_email
-                                : email.to_email}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {email.direction === 'inbound' ? email.from_email : 'To: ' + email.to_email}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p
-                          className={cn(
-                            'truncate text-sm',
-                            !email.is_read &&
-                              email.direction === 'inbound' &&
-                              'font-medium',
-                          )}
-                        >
-                          {email.subject || '(No subject)'}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDate(email.created_at)}
+            <div className="divide-y">
+              {conversations.map((conv) => (
+                <button
+                  key={conv.email}
+                  onClick={() => setSelectedConversation(conv.email)}
+                  className={cn(
+                    'w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
+                    selectedConversation === conv.email && 'bg-gray-100 dark:bg-gray-800',
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className={cn(
+                          'truncate text-sm',
+                          conv.unreadCount > 0 && 'font-semibold'
+                        )}>
+                          {conv.name || conv.email.split('@')[0]}
                         </span>
-                      </TableCell>
-                      <TableCell>
-                        {email.direction === 'inbound' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleReply(email);
-                            }}
-                          >
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        <span className="ml-2 flex-shrink-0 text-xs text-muted-foreground">
+                          {formatTime(conv.lastDate)}
+                        </span>
+                      </div>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {conv.email}
+                      </p>
+                      <p className={cn(
+                        'mt-1 truncate text-sm text-muted-foreground',
+                        conv.unreadCount > 0 && 'font-medium text-foreground'
+                      )}>
+                        {conv.lastMessage}
+                      </p>
+                    </div>
+                    {conv.unreadCount > 0 && (
+                      <Circle className="h-2.5 w-2.5 flex-shrink-0 fill-blue-500 text-blue-500" />
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </ScrollArea>
+      </div>
 
-      {/* Email Detail Dialog */}
-      <Dialog open={!!selectedEmail} onOpenChange={() => setSelectedEmail(null)}>
-        <DialogContent className="max-w-2xl">
-          {selectedEmail && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {selectedEmail.direction === 'inbound' ? (
-                    <Inbox className="h-5 w-5" />
+      {/* Chat Area */}
+      <div className="flex flex-1 flex-col">
+        {currentConversation ? (
+          <>
+            {/* Chat Header */}
+            <div className="flex items-center gap-3 border-b p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <User className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium">
+                  {currentConversation.name || currentConversation.email.split('@')[0]}
+                </p>
+                <p className="text-sm text-muted-foreground">{currentConversation.email}</p>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {currentConversation.messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      'flex',
+                      message.direction === 'outbound' ? 'justify-end' : 'justify-start'
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'max-w-[70%] rounded-2xl px-4 py-2',
+                        message.direction === 'outbound'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-gray-100 dark:bg-gray-800'
+                      )}
+                    >
+                      {message.subject && (
+                        <p className={cn(
+                          'mb-1 text-xs font-medium',
+                          message.direction === 'outbound'
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground'
+                        )}>
+                          {message.subject}
+                        </p>
+                      )}
+                      <p className="whitespace-pre-wrap text-sm">{message.body_text}</p>
+                      <p
+                        className={cn(
+                          'mt-1 text-right text-xs',
+                          message.direction === 'outbound'
+                            ? 'text-primary-foreground/70'
+                            : 'text-muted-foreground'
+                        )}
+                      >
+                        {formatMessageTime(message.created_at)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Reply Input */}
+            <div className="border-t p-4">
+              <div className="flex gap-2">
+                <Textarea
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                  className="min-h-[80px] resize-none"
+                />
+                <Button
+                  onClick={() => sendReply.mutate()}
+                  disabled={sendReply.isPending || !replyMessage.trim()}
+                  className="h-auto"
+                >
+                  {sendReply.isPending ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <Send className="h-5 w-5" />
                   )}
-                  {selectedEmail.subject || '(No subject)'}
-                </DialogTitle>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border bg-gray-50 p-4 dark:bg-gray-800">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">
-                        {selectedEmail.direction === 'inbound'
-                          ? selectedEmail.from_name || selectedEmail.from_email
-                          : 'iTracksy Support'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedEmail.direction === 'inbound'
-                          ? selectedEmail.from_email
-                          : `To: ${selectedEmail.to_email}`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    <Clock className="mr-1 inline h-4 w-4" />
-                    {formatDate(selectedEmail.created_at)}
-                  </div>
-                </div>
-
-                <div className="max-h-[400px] overflow-y-auto rounded-lg border bg-white p-4 dark:bg-gray-900">
-                  <p className="whitespace-pre-wrap text-sm">
-                    {selectedEmail.body_text}
-                  </p>
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelectedEmail(null)}>
-                  Close
                 </Button>
-                {selectedEmail.direction === 'inbound' && (
-                  <Button onClick={() => handleReply(selectedEmail)}>
-                    <Send className="mr-2 h-4 w-4" />
-                    Reply
-                  </Button>
-                )}
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Reply Dialog */}
-      <Dialog open={!!replyTo} onOpenChange={() => setReplyTo(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5" />
-              Reply to {replyTo?.from_name || replyTo?.from_email}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-gray-50 p-3 dark:bg-gray-800">
-              <p className="text-xs font-medium uppercase text-muted-foreground">
-                Original Message
-              </p>
-              <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                {replyTo?.body_text}
-              </p>
+              </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Subject</Label>
-              <Input
-                value={replySubject}
-                onChange={(e) => setReplySubject(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Message</Label>
-              <Textarea
-                value={replyMessage}
-                onChange={(e) => setReplyMessage(e.target.value)}
-                rows={10}
-                className="font-mono text-sm"
-              />
-            </div>
+          </>
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
+            <Inbox className="mb-4 h-16 w-16" />
+            <p className="text-lg">Select a conversation</p>
+            <p className="text-sm">Choose a conversation from the left to start messaging</p>
           </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReplyTo(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => sendReply.mutate()}
-              disabled={sendReply.isPending || !replyMessage.trim()}
-            >
-              {sendReply.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Send Reply
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        )}
+      </div>
     </div>
   );
 }
