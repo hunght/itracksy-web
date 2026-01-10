@@ -66,6 +66,7 @@ export type Database = {
         Row: {
           body_html: string | null;
           body_text: string | null;
+          campaign_id: string | null;
           created_at: string | null;
           direction: string;
           feedback_id: string | null;
@@ -74,6 +75,7 @@ export type Database = {
           id: string;
           in_reply_to: string | null;
           is_read: boolean | null;
+          lead_id: string | null;
           message_id: string | null;
           received_at: string | null;
           references: string | null;
@@ -83,6 +85,7 @@ export type Database = {
         Insert: {
           body_html?: string | null;
           body_text?: string | null;
+          campaign_id?: string | null;
           created_at?: string | null;
           direction: string;
           feedback_id?: string | null;
@@ -91,6 +94,7 @@ export type Database = {
           id?: string;
           in_reply_to?: string | null;
           is_read?: boolean | null;
+          lead_id?: string | null;
           message_id?: string | null;
           received_at?: string | null;
           references?: string | null;
@@ -100,6 +104,7 @@ export type Database = {
         Update: {
           body_html?: string | null;
           body_text?: string | null;
+          campaign_id?: string | null;
           created_at?: string | null;
           direction?: string;
           feedback_id?: string | null;
@@ -108,6 +113,7 @@ export type Database = {
           id?: string;
           in_reply_to?: string | null;
           is_read?: boolean | null;
+          lead_id?: string | null;
           message_id?: string | null;
           received_at?: string | null;
           references?: string | null;
@@ -116,10 +122,24 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: 'email_threads_campaign_id_fkey';
+            columns: ['campaign_id'];
+            isOneToOne: false;
+            referencedRelation: 'marketing_campaigns';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'email_threads_feedback_id_fkey';
             columns: ['feedback_id'];
             isOneToOne: false;
             referencedRelation: 'feedback';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'email_threads_lead_id_fkey';
+            columns: ['lead_id'];
+            isOneToOne: false;
+            referencedRelation: 'leads';
             referencedColumns: ['id'];
           },
         ];
@@ -191,6 +211,7 @@ export type Database = {
         Row: {
           created_at: string;
           description: string | null;
+          email_content: string | null;
           email_subject: string;
           email_template: string;
           id: string;
@@ -202,6 +223,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           description?: string | null;
+          email_content?: string | null;
           email_subject: string;
           email_template: string;
           id?: string;
@@ -213,6 +235,7 @@ export type Database = {
         Update: {
           created_at?: string;
           description?: string | null;
+          email_content?: string | null;
           email_subject?: string;
           email_template?: string;
           id?: string;
