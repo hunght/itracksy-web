@@ -84,24 +84,65 @@ export function ImportFromFeedbackModal() {
         throw new Error('No feedback selected');
       }
 
-      const now = new Date().toISOString();
-      const leadsToInsert = toImport.map((f) => ({
-        email: f.email,
-        name: f.name,
-        message: f.message,
-        phone: '',
-        group: groupName || null,
-        submission_time: f.created_at,
-        created_at: now,
-      }));
+      // Deduplicate by email (keep first occurrence)
+      const seenEmails = new Set<string>();
+      const uniqueToImport = toImport.filter((f) => {
+        const emailLower = f.email.toLowerCase();
+        if (seenEmails.has(emailLower)) {
+          return false;
+        }
+        seenEmails.add(emailLower);
+        return true;
+      });
 
-      const { error } = await (supabase as any)
+      // Double-check against existing leads
+      const { data: existingLeads } = await supabase
         .from('leads')
-        .insert(leadsToInsert);
+        .select('email');
 
-      if (error) throw error;
+      const existingEmails = new Set(
+        (existingLeads || []).map((l) => l.email.toLowerCase()),
+      );
 
-      return toImport.length;
+      const finalToImport = uniqueToImport.filter(
+        (f) => !existingEmails.has(f.email.toLowerCase()),
+      );
+
+      if (finalToImport.length === 0) {
+        throw new Error('All selected contacts are already imported');
+      }
+
+      const now = new Date().toISOString();
+      let importedCount = 0;
+      const errors: string[] = [];
+
+      // Import one by one to handle any remaining duplicates
+      for (const f of finalToImport) {
+        const { error } = await (supabase as any).from('leads').insert({
+          email: f.email,
+          name: f.name,
+          message: f.message,
+          phone: '',
+          group: groupName || null,
+          submission_time: f.created_at,
+          created_at: now,
+        });
+
+        if (error) {
+          // Skip duplicates silently
+          if (!error.message?.includes('duplicate')) {
+            errors.push(`${f.email}: ${error.message}`);
+          }
+        } else {
+          importedCount++;
+        }
+      }
+
+      if (errors.length > 0 && importedCount === 0) {
+        throw new Error(`Failed to import: ${errors[0]}`);
+      }
+
+      return importedCount;
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
