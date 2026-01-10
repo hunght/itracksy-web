@@ -26,7 +26,7 @@ interface CampaignLead {
 
 interface SendCampaignModalProps {
   campaign: Campaign;
-  leads: CampaignLead[];
+  leads: { id: string }[];
   onSent: (campaign: Campaign) => void;
 }
 

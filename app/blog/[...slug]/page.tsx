@@ -1,30 +1,41 @@
-import { posts } from '#site/content';
-import { MDXContent } from '@/components/mdx-components';
+import { getPostBySlug, getAllPosts } from '@/lib/blog';
 import { notFound } from 'next/navigation';
-import { formatDate } from '@/lib/utils'; // Added this import
-import Image from 'next/image';
+import { formatDate } from '@/lib/utils';
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import remarkGfm from 'remark-gfm';
+import rehypeSlug from 'rehype-slug';
+import rehypePrettyCode from 'rehype-pretty-code';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
 import '@/styles/mdx.css';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/site';
 import { Tag } from '@/components/tag';
+import Image, { ImageProps } from 'next/image';
+import { Callout } from '@/components/callout';
+
 interface PostPageProps {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
-async function getPostFromParams(params: PostPageProps['params']) {
-  const slug = params?.slug?.join('/');
-  const post = posts.find((post) => post.slugAsParams === slug);
+const components = {
+  Image: (props: ImageProps) => <Image {...props} />,
+  Callout,
+};
 
+async function getPostFromParams(slug: string[]) {
+  const slugPath = slug?.join('/');
+  const post = getPostBySlug(slugPath);
   return post;
 }
 
 export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
-  const post = await getPostFromParams(params);
+  const { slug } = await params;
+  const post = await getPostFromParams(slug);
 
   if (!post) {
     return {};
@@ -33,7 +44,6 @@ export async function generateMetadata({
   const ogSearchParams = new URLSearchParams();
   ogSearchParams.set('title', post.title);
 
-  // Define the image URL, preferring the post's thumbnail if available
   const imageUrl =
     post.thumbnail || `${siteConfig.url}/api/og?${ogSearchParams.toString()}`;
 
@@ -45,7 +55,7 @@ export async function generateMetadata({
       title: post.title,
       description: post.description,
       type: 'article',
-      url: `${siteConfig.url}${post.slug}`,
+      url: `${siteConfig.url}/${post.slug}`,
       publishedTime: post.date,
       modifiedTime: post.date,
       images: [
@@ -66,14 +76,14 @@ export async function generateMetadata({
   };
 }
 
-export async function generateStaticParams(): Promise<
-  PostPageProps['params'][]
-> {
+export async function generateStaticParams(): Promise<{ slug: string[] }[]> {
+  const posts = getAllPosts();
   return posts.map((post) => ({ slug: post.slugAsParams.split('/') }));
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const post = await getPostFromParams(params);
+  const { slug } = await params;
+  const post = await getPostFromParams(slug);
 
   if (!post || !post.published) {
     notFound();
@@ -92,7 +102,35 @@ export default async function PostPage({ params }: PostPageProps) {
         {formatDate(post.date)}
       </time>
       <hr className="my-4" />
-      <MDXContent code={post.body} />
+      <MDXRemote
+        source={post.content}
+        components={components}
+        options={{
+          mdxOptions: {
+            remarkPlugins: [remarkGfm],
+            rehypePlugins: [
+              rehypeSlug,
+              [rehypePrettyCode, { theme: 'github-dark' }],
+              [
+                rehypeAutolinkHeadings,
+                {
+                  behavior: 'prepend',
+                  properties: {
+                    className: ['subheading-anchor'],
+                    ariaLabel: 'Link to section',
+                  },
+                  content: {
+                    type: 'element',
+                    tagName: 'span',
+                    properties: { className: ['icon-link'] },
+                    children: [{ type: 'text', value: '#' }],
+                  },
+                },
+              ],
+            ],
+          },
+        }}
+      />
     </article>
   );
 }

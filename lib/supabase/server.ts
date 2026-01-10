@@ -1,34 +1,25 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { Database } from '../supabase';
 
-export function createSupabaseClient() {
-  const cookieStore = cookies();
+export async function createSupabaseClient() {
+  const cookieStore = await cookies();
 
-  // Create a server's supabase client with newly configured cookie,
-  // which could be used to maintain user's session
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
-            // The `delete` method was called from a Server Component.
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
           }
@@ -43,20 +34,29 @@ export function createSupabaseClient() {
   );
 }
 
-export function createAdminClient() {
-  const cookieStore = cookies();
+export async function createAdminClient() {
+  const cookieStore = await cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SERVICE_ROLE_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Ignore errors from Server Components
+          }
         },
       },
     },
   );
 }
 
-export type TypedSupabaseClient = ReturnType<typeof createSupabaseClient>;
-export type TypedAdminSupabaseClient = ReturnType<typeof createAdminClient>;
+export type TypedSupabaseClient = Awaited<ReturnType<typeof createSupabaseClient>>;
+export type TypedAdminSupabaseClient = Awaited<ReturnType<typeof createAdminClient>>;

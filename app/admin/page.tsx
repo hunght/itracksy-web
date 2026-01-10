@@ -1,21 +1,22 @@
 import { createSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import PageSizeSelector from './components/PageSizeSelector';
-import UserSelectionTable from './components/UserSelectionTable';
 
-import { User } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { isUserAdmin } from '@/lib/auth';
 
+interface AdminUserListProps {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}
+
 export default async function AdminUserList({
   searchParams,
-}: {
-  searchParams: { page?: string; pageSize?: string };
-}) {
-  const supabase = createSupabaseClient();
+}: AdminUserListProps) {
+  const supabase = await createSupabaseClient();
+  const resolvedSearchParams = await searchParams;
 
-  const page = parseInt(searchParams.page || '1', 10);
-  const pageSize = parseInt(searchParams.pageSize || '50', 10);
+  const page = parseInt(resolvedSearchParams.page || '1', 10);
+  const pageSize = parseInt(resolvedSearchParams.pageSize || '50', 10);
 
   // Check if the user is authenticated
   const {

@@ -1,9 +1,9 @@
-import { posts } from '#site/content';
+import { getAllPosts } from '@/lib/blog';
 import { PostItem } from '@/components/post-item';
 import { QueryPagination } from '@/components/query-pagination';
 import { Tag } from '@/components/tag';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getAllTags, sortPosts, sortTagsByCount } from '@/lib/utils';
+import { getAllTags, sortTagsByCount } from '@/lib/utils';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -26,17 +26,18 @@ export const metadata: Metadata = {
 const POSTS_PER_PAGE = 5;
 
 interface BlogPageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
-  };
+  }>;
 }
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {
-  const currentPage = Number(searchParams?.page) || 1;
-  const sortedPosts = sortPosts(posts.filter((post) => post.published));
-  const totalPages = Math.ceil(sortedPosts.length / POSTS_PER_PAGE);
+  const resolvedSearchParams = await searchParams;
+  const currentPage = Number(resolvedSearchParams?.page) || 1;
+  const posts = getAllPosts();
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
 
-  const displayPosts = sortedPosts.slice(
+  const displayPosts = posts.slice(
     POSTS_PER_PAGE * (currentPage - 1),
     POSTS_PER_PAGE * currentPage,
   );

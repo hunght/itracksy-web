@@ -1,12 +1,13 @@
-import { TypedSupabaseClient } from '@/types/supabase';
 import { createBrowserClient } from '@supabase/ssr';
 
 import { useMemo } from 'react';
 import { Database } from '../supabase';
 
-let client: TypedSupabaseClient | undefined;
+type BrowserClient = ReturnType<typeof createBrowserClient<Database>>;
 
-function getSupabaseBrowserClient() {
+let client: BrowserClient | undefined;
+
+function getSupabaseBrowserClient(): BrowserClient {
   if (client) {
     return client;
   }

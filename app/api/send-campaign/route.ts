@@ -1,10 +1,26 @@
 import { createAdminClient, TypedSupabaseClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import React from 'react';
 
 import { Campaign } from '@/types/campaigns';
 
 import { EMAIL_TEMPLATES, TemplateType } from '@/config/email_campaigns';
+
+type CampaignLeadWithLead = {
+  id: string;
+  campaign_id: string;
+  lead_id: string;
+  status: string;
+  sent_at: string | null;
+  lead: {
+    id: string;
+    name: string | null;
+    email: string;
+    created_at: string;
+    submission_time: string | null;
+  } | null;
+};
 
 // Import other email templates
 
@@ -29,7 +45,7 @@ export async function POST(request: Request) {
     }
 
     // Initialize Supabase client
-    const supabase = createAdminClient();
+    const supabase = await createAdminClient();
 
     // Get all pending campaigns
     const { data: campaigns, error: campaignsError } = await supabase
@@ -80,12 +96,12 @@ async function processCampaignsInBackground(
   for (const campaign of campaigns) {
     // Get pending leads that are within the time window of their submission_time
     const now = new Date();
-    const { data: campaignLeads, error: leadsError } = await supabase
+    const { data: campaignLeads, error: leadsError } = (await supabase
       .from('campaign_leads')
       .select(`*,lead:leads(id, name, email, created_at, submission_time)`)
       .eq('campaign_id', campaign.id)
       .eq('status', 'pending')
-      .filter('lead.submission_time', 'not.is', null);
+      .filter('lead.submission_time', 'not.is', null)) as unknown as { data: CampaignLeadWithLead[] | null; error: Error | null };
 
     if (leadsError) {
       console.error('Error fetching campaign leads:', leadsError);
@@ -159,6 +175,9 @@ async function processCampaignsInBackground(
         }
 
         // Send email using Resend
+        const emailElement = EmailTemplate({
+          name: campaignLead.lead.name || 'there',
+        });
         const { data: emailData, error: emailError } = await resend.emails.send(
           {
             from: 'iTracksy <noreply@itracksy.com>',
@@ -166,9 +185,7 @@ async function processCampaignsInBackground(
             subject: isDevelopment
               ? `[TEST] ${campaign.email_subject}`
               : campaign.email_subject,
-            react: EmailTemplate({
-              name: campaignLead.lead.name || 'there',
-            }),
+            react: emailElement as React.ReactElement,
             tags: [
               { name: 'lead_id', value: String(campaignLead.lead.id) },
               { name: 'campaign_id', value: String(campaign.id) },
@@ -182,7 +199,8 @@ async function processCampaignsInBackground(
         }
 
         // Update campaign lead status
-        const { error: updateError } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase as any)
           .from('campaign_leads')
           .update({
             status: 'sent',
@@ -215,7 +233,8 @@ async function processCampaignsInBackground(
       .eq('status', 'pending');
 
     if (count === 0) {
-      await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
         .from('marketing_campaigns')
         .update({
           status: 'completed',

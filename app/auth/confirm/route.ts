@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   console.log('==== end log ===');
 
   if (token_hash && type) {
-    const supabase = createSupabaseClient();
+    const supabase = await createSupabaseClient();
 
     const { error } = await supabase.auth.verifyOtp({
       type,

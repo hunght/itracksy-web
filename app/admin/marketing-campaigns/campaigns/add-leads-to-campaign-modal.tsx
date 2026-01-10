@@ -59,15 +59,16 @@ export function AddLeadsToCampaignModal({
   const { data: groups, isLoading: isLoadingGroups } = useQuery({
     queryKey: ['lead-groups'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('leads')
         .select('group')
-        .not('group', 'is', null);
+        .not('group', 'is', null)) as { data: { group: string | null }[] | null; error: Error | null };
 
       if (error) throw error;
 
       const uniqueGroups = Array.from(
-        new Set(data.map((item) => item.group).filter(Boolean)),
+        new Set((data || []).map((item) => item.group).filter(Boolean)),
       );
       return uniqueGroups as string[];
     },
@@ -77,13 +78,14 @@ export function AddLeadsToCampaignModal({
   const { data: existingCampaignLeads } = useQuery({
     queryKey: ['campaign-leads', campaign.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('campaign_leads')
         .select('lead_id')
-        .eq('campaign_id', campaign.id);
+        .eq('campaign_id', campaign.id)) as { data: { lead_id: string }[] | null; error: Error | null };
 
       if (error) throw error;
-      return data.map((item) => item.lead_id);
+      return (data || []).map((item) => item.lead_id);
     },
     enabled: open,
   });
@@ -104,13 +106,14 @@ export function AddLeadsToCampaignModal({
         status: 'pending',
       }));
 
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('campaign_leads')
         .insert(campaignLeads)
-        .select();
+        .select()) as { data: { id: string }[] | null; error: Error | null };
 
       if (error) throw error;
-      return { added: data.length };
+      return { added: (data || []).length };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({

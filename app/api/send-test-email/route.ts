@@ -1,6 +1,7 @@
 import { EMAIL_TEMPLATES, TemplateType } from '@/config/email_campaigns';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import React from 'react';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -31,13 +32,14 @@ export async function POST(request: Request) {
     }
 
     // Attempt to send the test email
+    const emailElement = EMAIL_TEMPLATES[emailTemplate as TemplateType]({
+      name: 'Test User',
+    });
     const { data, error } = await resend.emails.send({
       from: 'iTracksy <noreply@itracksy.com>',
       to: [testEmail.trim()], // Ensure email is trimmed and in an array
       subject: `[TEST] ${emailSubject}`,
-      react: EMAIL_TEMPLATES[emailTemplate as TemplateType]({
-        name: 'Test User',
-      }),
+      react: emailElement as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'test_campaign' },
         { name: 'template', value: emailTemplate },

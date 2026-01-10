@@ -14,10 +14,11 @@ import Link from 'next/link';
 import { getPlatformDownloadUrl } from '@/utils/handleDownload';
 import { useAppVersion } from '@/hooks/use-app-version';
 import Image from 'next/image';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseBrowser } from '@/lib/supabase/client';
 
 const DownloadPage = () => {
   const { links, loading, version } = useAppVersion();
+  const supabase = useSupabaseBrowser();
   const [os, setOs] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
@@ -170,9 +171,6 @@ const DownloadPage = () => {
     }
 
     try {
-      // Create a Supabase client
-      const supabase = createClientComponentClient();
-
       // Save the email to the leads table
       const { error } = await supabase.from('leads').insert({
         name: email.split('@')[0], // Extract username part of email as name

@@ -3,7 +3,7 @@
 import { createSupabaseClient } from '@/lib/supabase/server';
 
 export async function verifyOTP(email: string, otp: string) {
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   const { data, error } = await supabase.auth.verifyOtp({
     email,

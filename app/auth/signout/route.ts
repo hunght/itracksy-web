@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { resetUser } from '@/lib/posthog';
 
 export async function POST(req: NextRequest) {
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   // Check if a user's logged in
   const {

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "app/**/*.{ts,tsx}",
+    "components/**/*.{ts,tsx}",
+    "lib/**/*.{ts,tsx}",
+    "utils/**/*.{ts,tsx}",
+    "hooks/**/*.{ts,tsx}",
+    "config/**/*.{ts,tsx}",
+    "emails/**/*.{ts,tsx}",
+    "state/**/*.{ts,tsx}",
+    "types/**/*.{ts,tsx}"
+  ],
+  "project": ["**/*.{ts,tsx,js,jsx,mjs}"],
+  "ignore": [
+    "**/*.d.ts",
+    "supabase/**",
+    "content/**",
+    ".next/**",
+    "node_modules/**"
+  ],
+  "ignoreDependencies": [
+    "prettier-plugin-tailwindcss"
+  ],
+  "ignoreBinaries": [
+    "supabase"
+  ],
+  "rules": {
+    "duplicates": "off"
+  },
+  "next": {
+    "entry": [
+      "next.config.{js,ts,mjs}",
+      "app/**/*.{ts,tsx}",
+      "proxy.{js,ts}"
+    ]
+  }
+}

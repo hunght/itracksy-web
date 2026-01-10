@@ -26,7 +26,8 @@ export function CreateLeadModal() {
 
   const { mutate: submitLead, isPending: isSubmitting } = useMutation({
     mutationFn: async (newLead: Omit<Lead, 'id' | 'created_at'>) => {
-      const { error } = await supabase.from('leads').insert(newLead);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).from('leads').insert(newLead);
       if (error) throw error;
     },
   });

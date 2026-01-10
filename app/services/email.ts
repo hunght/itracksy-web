@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import React from 'react';
 
 import WelcomeEmail from '../../emails/WelcomeEmail';
 import InactivityEmail from '../../emails/InactivityEmail';
@@ -16,7 +17,7 @@ async function sendEmailWithRetry(
   emailOptions: {
     to: string;
     subject: string;
-    react: React.ReactNode;
+    react: React.ReactElement;
 
     tags?: { name: string; value: string }[];
   },
@@ -56,7 +57,7 @@ export async function sendInactivityEmail(userEmail: string) {
     await sendEmailWithRetry({
       to: toEmail,
       subject: 'We miss you at iTracksy!',
-      react: InactivityEmail({}),
+      react: InactivityEmail({}) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'inactivity' },
         { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
@@ -79,7 +80,7 @@ export async function sendWelcomeEmail(
     await sendEmailWithRetry({
       to: toEmail,
       subject: 'Welcome to iTracksy!',
-      react: WelcomeEmail({ name: userFirstName }),
+      react: WelcomeEmail({ name: userFirstName }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'welcome' },
         { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
@@ -99,7 +100,7 @@ export async function sendProductUpdateEmail(userEmail: string) {
     await sendEmailWithRetry({
       to: toEmail,
       subject: 'Product Update',
-      react: ProductUpdateEmail({}),
+      react: ProductUpdateEmail({}) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'product_update' },
         { name: 'recipient_email', value: sanitizedToEmail(toEmail) },
@@ -114,7 +115,7 @@ export async function sendOTPEmail(userEmail: string, otp: string) {
       await sendEmailWithRetry({
         to: userEmail,
         subject: 'Your iTracksy Login OTP',
-        react: OTPEmail({ otp }),
+        react: OTPEmail({ otp }) as React.ReactElement,
         tags: [
           { name: 'email_type', value: 'otp' },
           { name: 'recipient_email', value: sanitizedToEmail(userEmail) },
@@ -144,7 +145,7 @@ export async function sendFeedbackNotificationEmail(
     await sendEmailWithRetry({
       to: toEmail,
       subject: `Thank you for your feedback, ${name}!`,
-      react: FeedbackNotificationEmail({ name, email, feedbackType, message }),
+      react: FeedbackNotificationEmail({ name, email, feedbackType, message }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'feedback_confirmation' },
         { name: 'feedback_type', value: feedbackType },
@@ -170,7 +171,7 @@ export async function sendFeedbackNotificationEmail(
     await sendEmailWithRetry({
       to: supportEmail,
       subject: `New Feedback: ${feedbackType} from ${name}`,
-      react: FeedbackNotificationEmail({ name, email, feedbackType, message }),
+      react: FeedbackNotificationEmail({ name, email, feedbackType, message }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'feedback_notification' },
         { name: 'feedback_type', value: feedbackType },
@@ -218,7 +219,7 @@ export async function sendFeedbackReplyEmail({
         message,
         originalMessage,
         feedbackType,
-      }),
+      }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'feedback_reply' },
         { name: 'feedback_type', value: feedbackType },

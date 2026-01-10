@@ -94,7 +94,8 @@ export function CreateCampaignModal({
 
   const { mutate: createCampaign, isPending } = useMutation({
     mutationFn: async (data: CampaignForm) => {
-      const { data: campaign, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: campaign, error } = (await (supabase as any)
         .from('marketing_campaigns')
         .insert({
           name: data.name,
@@ -104,7 +105,7 @@ export function CreateCampaignModal({
           status: 'draft',
         })
         .select('*')
-        .single();
+        .single()) as { data: Campaign | null; error: Error | null };
 
       if (error) throw error;
       return campaign as Campaign;

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Initialize Supabase client
-    const supabase = createAdminClient();
+    const supabase = await createAdminClient();
 
     // Extract the recipient email (first in the to array)
     const recipientEmail = data.to[0];
@@ -76,11 +76,11 @@ export async function POST(request: NextRequest) {
     if (!campaignId) {
       // find the current active campaign
       const { data: activeCampaigns, error: activeCampaignError } =
-        await supabase
+        (await supabase
           .from('marketing_campaigns')
           .select('id')
           .eq('status', 'active')
-          .single();
+          .single()) as unknown as { data: { id: string } | null; error: Error | null };
       if (activeCampaignError || !activeCampaigns) {
         // Log the error and return a 404 response
         // throw error if no active campaign is found
@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
     }
 
     // If this is related to a campaign (has campaign_id tag)
+    type CampaignLeadResult = { id: string; campaign_id: string; lead_id: string; sent_at: string | null };
+
     if (campaignId) {
       const leadId = tagsObject.lead_id;
       let campaignLeadsQuery;
@@ -112,20 +114,20 @@ export async function POST(request: NextRequest) {
       // Find the campaign_lead entry using lead_id if available, or email otherwise
       if (leadId) {
         // Query using lead_id directly
-        campaignLeadsQuery = await supabase
+        campaignLeadsQuery = (await supabase
           .from('campaign_leads')
           .select('id, campaign_id, lead_id, sent_at')
           .eq('campaign_id', campaignId)
           .eq('lead_id', leadId)
-          .single();
+          .single()) as unknown as { data: CampaignLeadResult | null; error: Error | null };
       } else {
         // Fallback to using email lookup
-        campaignLeadsQuery = await supabase
+        campaignLeadsQuery = (await supabase
           .from('campaign_leads')
           .select('id, campaign_id, lead_id, sent_at')
           .eq('campaign_id', campaignId)
           .eq('lead:leads(email)', recipientEmail)
-          .single();
+          .single()) as unknown as { data: CampaignLeadResult | null; error: Error | null };
       }
 
       const { data: campaignLeads, error: findError } = campaignLeadsQuery;
@@ -134,11 +136,13 @@ export async function POST(request: NextRequest) {
         console.error('Error finding campaign lead:', findError);
       } else if (campaignLeads) {
         // Update the campaign_leads table based on the event type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const supabaseAny = supabase as any;
         switch (type) {
           case 'email.sent':
           case 'email.delivered':
             if (!campaignLeads.sent_at) {
-              const { error: sentError } = await supabase
+              const { error: sentError } = await supabaseAny
                 .from('campaign_leads')
                 .update({
                   status: 'sent',
@@ -153,7 +157,7 @@ export async function POST(request: NextRequest) {
             break;
 
           case 'email.opened':
-            const { error: openedError } = await supabase
+            const { error: openedError } = await supabaseAny
               .from('campaign_leads')
               .update({ opened_at: new Date().toISOString() })
               .eq('id', campaignLeads.id)
@@ -165,7 +169,7 @@ export async function POST(request: NextRequest) {
             break;
 
           case 'email.clicked':
-            const { error: clickedError } = await supabase
+            const { error: clickedError } = await supabaseAny
               .from('campaign_leads')
               .update({ clicked_at: new Date().toISOString() })
               .eq('id', campaignLeads.id)
@@ -177,7 +181,7 @@ export async function POST(request: NextRequest) {
             break;
 
           case 'email.bounced':
-            const { error: bouncedError } = await supabase
+            const { error: bouncedError } = await supabaseAny
               .from('campaign_leads')
               .update({ status: 'bounced' })
               .eq('id', campaignLeads.id);

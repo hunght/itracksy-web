@@ -8,7 +8,7 @@ import { identifyUser, resetUser } from '@/lib/posthog';
 export const signIn = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -33,10 +33,10 @@ export const signIn = async (formData: FormData) => {
 export const signUp = async (formData: FormData) => {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = headers().get('origin');
+  const siteUrl = (await headers()).get('origin');
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -54,10 +54,10 @@ export const signUp = async (formData: FormData) => {
 };
 
 export async function loginWithGoogle() {
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = headers().get('origin');
+  const siteUrl = (await headers()).get('origin');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -82,10 +82,10 @@ export async function loginWithGoogle() {
 
 export const loginWithOTP = async (formData: FormData) => {
   const email = formData.get('email') as string;
-  const supabase = createSupabaseClient();
+  const supabase = await createSupabaseClient();
 
   // Get the site URL from environment variable or fallback to the origin header
-  const siteUrl = headers().get('origin');
+  const siteUrl = (await headers()).get('origin');
 
   const { error } = await supabase.auth.signInWithOtp({
     email,

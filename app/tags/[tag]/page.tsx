@@ -1,4 +1,4 @@
-import { posts } from '#site/content';
+import { getAllPosts } from '@/lib/blog';
 import { PostItem } from '@/components/post-item';
 import { Tag } from '@/components/tag';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,15 +7,15 @@ import { slug } from 'github-slugger';
 import { Metadata } from 'next';
 
 interface TagPageProps {
-  params: {
+  params: Promise<{
     tag: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
   params,
 }: TagPageProps): Promise<Metadata> {
-  const { tag } = params;
+  const { tag } = await params;
   const title = tag.split('-').join(' ');
   return {
     title: `${title} - iTracksy`,
@@ -35,15 +35,17 @@ export async function generateMetadata({
 }
 
 export const generateStaticParams = () => {
+  const posts = getAllPosts();
   const tags = getAllTags(posts);
   const paths = Object.keys(tags).map((tag) => ({ tag: slug(tag) }));
   return paths;
 };
 
-export default function TagPage({ params }: TagPageProps) {
-  const { tag } = params;
+export default async function TagPage({ params }: TagPageProps) {
+  const { tag } = await params;
   const title = tag.split('-').join(' ');
 
+  const posts = getAllPosts();
   const displayPosts = getPostsByTagSlug(posts, tag);
   const tags = getAllTags(posts);
   const sortedTags = sortTagsByCount(tags);

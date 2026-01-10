@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { posts } from '#site/content';
+import { getAllPosts } from '@/lib/blog';
 import { siteConfig } from '@/config/site';
 import { getAllTags, sortTagsByCount } from '@/lib/utils';
 import { slug } from 'github-slugger';
@@ -34,6 +34,7 @@ async function sendToIndexNow(urlList: string[]) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = getAllPosts();
   // Generate sitemap entries for blog posts
   const sitemapPost: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${siteConfig.url}/blog/${post.slugAsParams}`,

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export function EmailSubscriptionForm() {
+  const supabase = useSupabaseBrowser();
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,9 +25,6 @@ export function EmailSubscriptionForm() {
     setError('');
 
     try {
-      // Create a Supabase client
-      const supabase = createClientComponentClient();
-
       // Save the email to the leads table
       const { error: supabaseError } = await supabase.from('leads').insert({
         name: email.split('@')[0], // Extract username part of email as name

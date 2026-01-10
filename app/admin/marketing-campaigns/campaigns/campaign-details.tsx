@@ -31,7 +31,7 @@ interface CampaignDetailsProps {
 }
 
 // Define a simplified type for campaign leads to avoid deep nesting
-interface CampaignLeadWithLead {
+interface CampaignLeadWithLeadData {
   id: string;
   campaign_id: string;
   lead_id: string;
@@ -41,10 +41,10 @@ interface CampaignLeadWithLead {
   clicked_at: string | null;
   lead: {
     id: string;
-    name: string;
+    name: string | null;
     email: string;
     created_at: string;
-  };
+  } | null;
 }
 
 export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
@@ -59,7 +59,8 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
   const { data: campaignLeads, isLoading: isLoadingLeads } = useQuery({
     queryKey: ['campaign-leads', campaign.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('campaign_leads')
         .select(
           `
@@ -67,7 +68,7 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
           lead:leads(id, name, email, created_at)
         `,
         )
-        .eq('campaign_id', campaign.id);
+        .eq('campaign_id', campaign.id)) as { data: CampaignLeadWithLeadData[] | null; error: Error | null };
 
       if (error) throw error;
       return data;
@@ -76,16 +77,17 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
 
   // Extract just the leads for the SendCampaignModal
   const leadsForCampaign =
-    campaignLeads?.map((cl) => cl.lead).filter((lead) => lead !== null) || [];
+    campaignLeads?.map((cl) => cl.lead).filter((lead): lead is NonNullable<typeof lead> => lead !== null) || [];
 
   const { mutate: updateCampaignStatus, isPending: isUpdating } = useMutation({
     mutationFn: async (status: string) => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('marketing_campaigns')
         .update({ status })
         .eq('id', campaign.id)
         .select('*')
-        .single();
+        .single()) as { data: Campaign | null; error: Error | null };
 
       if (error) throw error;
       return data as Campaign;
@@ -117,12 +119,13 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
         field: string;
         value: string;
       }) => {
-        const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = (await (supabase as any)
           .from('marketing_campaigns')
           .update({ [field]: value })
           .eq('id', campaign.id)
           .select('*')
-          .single();
+          .single()) as { data: Campaign | null; error: Error | null };
 
         if (error) throw error;
         return data as Campaign;

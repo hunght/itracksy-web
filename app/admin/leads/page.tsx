@@ -83,10 +83,11 @@ export default function LeadsPage() {
   // Fetch available groups
   useEffect(() => {
     const fetchGroups = async () => {
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = (await (supabase as any)
         .from('leads')
         .select('group')
-        .not('group', 'is', null);
+        .not('group', 'is', null)) as { data: { group: string | null }[] | null; error: Error | null };
 
       if (!error && data) {
         const groups = data
@@ -127,13 +128,14 @@ export default function LeadsPage() {
   const addLeadsToGroup = async (groupName: string) => {
     if (selectedLeads.length === 0) return;
 
-    const { error } = await supabase
+    const leadIds = selectedLeads.map((lead) => lead.id).filter((id): id is string => id !== undefined);
+    if (leadIds.length === 0) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('leads')
       .update({ group: groupName })
-      .in(
-        'id',
-        selectedLeads.map((lead) => lead.id),
-      );
+      .in('id', leadIds);
 
     if (!error) {
       refetch();
@@ -145,13 +147,14 @@ export default function LeadsPage() {
   const removeFromGroup = async () => {
     if (selectedLeads.length === 0) return;
 
-    const { error } = await supabase
+    const leadIds = selectedLeads.map((lead) => lead.id).filter((id): id is string => id !== undefined);
+    if (leadIds.length === 0) return;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('leads')
       .update({ group: null })
-      .in(
-        'id',
-        selectedLeads.map((lead) => lead.id),
-      );
+      .in('id', leadIds);
 
     if (!error) {
       refetch();

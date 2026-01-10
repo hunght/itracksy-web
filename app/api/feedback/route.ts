@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createSupabaseClient } from '@/lib/supabase/server';
 import { sendFeedbackNotificationEmail } from '@/app/services/email';
 
 export async function POST(request: Request) {
@@ -16,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Initialize Supabase client
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseClient();
 
     // Insert feedback into database
     const { error } = await supabase.from('feedback').insert({

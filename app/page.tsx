@@ -1,11 +1,8 @@
-import { sortPosts } from '@/lib/utils';
-import { posts } from '#site/content';
+import { getAllPosts } from '@/lib/blog';
 import { PostItem } from '@/components/post-item';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-import { JsonLd } from 'react-schemaorg';
-import { WebSite, SoftwareApplication, VideoObject } from 'schema-dts';
 import Image from 'next/image';
 import { Metadata } from 'next';
 import Link from 'next/link';
@@ -83,60 +80,68 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  const latestPosts = sortPosts(posts).slice(0, 5);
+  const latestPosts = getAllPosts().slice(0, 5);
+
+  const videoObjectSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'VideoObject',
+    name: 'iTracksy Demo Video',
+    description:
+      'Watch how iTracksy helps you track your time and boost productivity',
+    thumbnailUrl: 'https://www.itracksy.com/video-thumbnail.jpg',
+    uploadDate: '2023-04-15T08:00:00+08:00',
+    duration: 'PT1M20S',
+    contentUrl: 'https://www.itracksy.com/demo-video.mp4',
+    embedUrl: 'https://www.youtube.com/embed/your-video-id',
+  };
+
+  const webSiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'iTracksy',
+    url: 'https://www.itracksy.com',
+    description: description,
+    inLanguage: 'en-US',
+    sameAs: [
+      siteConfig.links.github,
+      siteConfig.links.twitter,
+      siteConfig.links.discord,
+    ],
+  };
+
+  const softwareAppSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'iTracksy',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Windows, macOS, Linux',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '25',
+    },
+    downloadUrl: 'https://www.itracksy.com/download',
+  };
 
   return (
     <>
       {/* Structured Data for SEO */}
-      <JsonLd<VideoObject>
-        item={{
-          '@context': 'https://schema.org',
-          '@type': 'VideoObject',
-          name: 'iTracksy Demo Video',
-          description:
-            'Watch how iTracksy helps you track your time and boost productivity',
-          thumbnailUrl: 'https://www.itracksy.com/video-thumbnail.jpg',
-          uploadDate: '2023-04-15T08:00:00+08:00',
-          duration: 'PT1M20S',
-          contentUrl: 'https://www.itracksy.com/demo-video.mp4',
-          embedUrl: 'https://www.youtube.com/embed/your-video-id',
-        }}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoObjectSchema) }}
       />
-      <JsonLd<WebSite>
-        item={{
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: 'iTracksy',
-          url: 'https://www.itracksy.com',
-
-          description: description,
-          inLanguage: 'en-US',
-          sameAs: [
-            siteConfig.links.github,
-            siteConfig.links.twitter,
-            siteConfig.links.discord,
-          ],
-        }}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
       />
-      <JsonLd<SoftwareApplication>
-        item={{
-          '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: 'iTracksy',
-          applicationCategory: 'BusinessApplication',
-          operatingSystem: 'Windows, macOS, Linux',
-          offers: {
-            '@type': 'Offer',
-            price: '0',
-            priceCurrency: 'USD',
-          },
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: '4.8',
-            ratingCount: '25',
-          },
-          downloadUrl: 'https://www.itracksy.com/download',
-        }}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
       />
       <div className="min-h-dvh relative flex flex-col bg-background">
         <SiteHeader />

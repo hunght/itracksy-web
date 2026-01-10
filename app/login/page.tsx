@@ -20,11 +20,7 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow', // Prevent indexing of login page
 };
 
-export default function Login({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
+export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 p-4">
       <Card className="w-full max-w-md overflow-hidden rounded-lg shadow-2xl">

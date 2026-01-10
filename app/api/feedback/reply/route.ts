@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createSupabaseClient } from '@/lib/supabase/server';
 import { sendFeedbackReplyEmail } from '@/app/services/email';
 import { isUserAdmin } from '@/lib/auth';
-import { nanoid } from 'nanoid';
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = await createSupabaseClient();
 
     // Check if user is authenticated and is admin
     const {
@@ -30,7 +28,6 @@ export async function POST(request: Request) {
       userName,
       originalMessage,
       feedbackType,
-      inReplyTo, // Message ID of the email we're replying to (if any)
     } = await request.json();
 
     // Validate input
@@ -41,11 +38,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate a message ID for this outbound email
-    const messageId = `<${nanoid()}@itracksy.com>`;
-
     // Send email
-    const emailResult = await sendFeedbackReplyEmail({
+    await sendFeedbackReplyEmail({
       to,
       subject,
       message,
@@ -54,28 +48,9 @@ export async function POST(request: Request) {
       feedbackType,
     });
 
-    // Store outbound email in thread
-    const { error: threadError } = await supabase.from('email_threads').insert({
-      message_id: messageId,
-      from_email: 'support@itracksy.com',
-      from_name: 'iTracksy Support',
-      to_email: to,
-      subject,
-      body_text: message,
-      body_html: null, // We store the plain text version
-      in_reply_to: inReplyTo || null,
-      feedback_id: feedbackId,
-      direction: 'outbound',
-      is_read: true, // Outbound emails are always "read"
-    });
-
-    if (threadError) {
-      console.error('Error storing outbound email in thread:', threadError);
-      // Don't fail - email was still sent
-    }
-
     // Update feedback record with replied_at timestamp
-    const { error: updateError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase as any)
       .from('feedback')
       .update({ replied_at: new Date().toISOString() })
       .eq('id', feedbackId);
@@ -85,7 +60,7 @@ export async function POST(request: Request) {
       // Don't fail the request if update fails, email was still sent
     }
 
-    return NextResponse.json({ success: true, messageId });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Feedback reply error:', error);
     return NextResponse.json(
