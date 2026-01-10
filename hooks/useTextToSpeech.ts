@@ -1,10 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAtom } from 'jotai';
-import {
- 
-  isPlayingAudioAtom,
-  isPausedAudioAtom,
-} from '@/state/textToSpeech';
+import { isPlayingAudioAtom, isPausedAudioAtom } from '@/state/textToSpeech';
 
 // Global state to track the currently playing instance
 let globalPlayingInstance: string | null = null;
@@ -12,7 +8,7 @@ let globalPlayingInstance: string | null = null;
 // Storage keys for persistence
 const STORAGE_KEYS = {
   CURRENT_SENTENCE: 'tts-current-sentence',
- 
+
   INSTANCE_ID: 'tts-instance-id',
 } as const;
 
@@ -38,18 +34,18 @@ export const useTextToSpeech = () => {
   // Load saved state on mount
   useEffect(() => {
     const savedInstanceId = localStorage.getItem(STORAGE_KEYS.INSTANCE_ID);
-    const savedSentenceIndex = localStorage.getItem(STORAGE_KEYS.CURRENT_SENTENCE);
- 
+    const savedSentenceIndex = localStorage.getItem(
+      STORAGE_KEYS.CURRENT_SENTENCE,
+    );
 
     if (savedInstanceId === instanceId.current && savedSentenceIndex) {
       // Wait for DOM to be ready before setting the state
       setTimeout(() => {
         setCurrentSentenceIndex(parseInt(savedSentenceIndex, 10));
-         
-          setIsPausedAudio(true);
-          setIsPlayingAudio(true);
-          globalPlayingInstance = instanceId.current;
-     
+
+        setIsPausedAudio(true);
+        setIsPlayingAudio(true);
+        globalPlayingInstance = instanceId.current;
       }, 0);
     }
   }, []);
@@ -103,14 +99,16 @@ export const useTextToSpeech = () => {
     }
 
     if (currentSentenceIndex !== null) {
-      localStorage.setItem(STORAGE_KEYS.CURRENT_SENTENCE, currentSentenceIndex.toString());
+      localStorage.setItem(
+        STORAGE_KEYS.CURRENT_SENTENCE,
+        currentSentenceIndex.toString(),
+      );
       localStorage.setItem(STORAGE_KEYS.INSTANCE_ID, instanceId.current);
- 
     } else {
       // Only clear storage if we're explicitly resetting (e.g., when stopping)
       if (isPlayingAudio === false && isPausedAudio === false) {
         localStorage.removeItem(STORAGE_KEYS.CURRENT_SENTENCE);
-   
+
         localStorage.removeItem(STORAGE_KEYS.INSTANCE_ID);
       }
     }
@@ -169,7 +167,7 @@ export const useTextToSpeech = () => {
 
     // Clear storage when resetting
     localStorage.removeItem(STORAGE_KEYS.CURRENT_SENTENCE);
- 
+
     localStorage.removeItem(STORAGE_KEYS.INSTANCE_ID);
   }, []);
 

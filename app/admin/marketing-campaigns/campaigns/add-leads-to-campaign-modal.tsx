@@ -63,7 +63,10 @@ export function AddLeadsToCampaignModal({
       const { data, error } = (await (supabase as any)
         .from('leads')
         .select('group')
-        .not('group', 'is', null)) as { data: { group: string | null }[] | null; error: Error | null };
+        .not('group', 'is', null)) as {
+        data: { group: string | null }[] | null;
+        error: Error | null;
+      };
 
       if (error) throw error;
 
@@ -82,7 +85,10 @@ export function AddLeadsToCampaignModal({
       const { data, error } = (await (supabase as any)
         .from('campaign_leads')
         .select('lead_id')
-        .eq('campaign_id', campaign.id)) as { data: { lead_id: string }[] | null; error: Error | null };
+        .eq('campaign_id', campaign.id)) as {
+        data: { lead_id: string }[] | null;
+        error: Error | null;
+      };
 
       if (error) throw error;
       return (data || []).map((item) => item.lead_id);

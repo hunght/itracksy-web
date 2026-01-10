@@ -8,7 +8,7 @@ export interface UserProperties {
 
 export const identifyUser = (
   distinctId: string,
-  userProperties?: UserProperties
+  userProperties?: UserProperties,
 ) => {
   if (typeof window !== 'undefined') {
     posthog.identify(distinctId, userProperties);

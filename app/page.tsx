@@ -143,7 +143,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareAppSchema) }}
       />
-      <div className="min-h-dvh relative flex flex-col bg-background">
+      <div className="relative flex min-h-dvh flex-col bg-background">
         <SiteHeader />
         <main className="flex-1">
           <section

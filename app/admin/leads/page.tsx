@@ -87,7 +87,10 @@ export default function LeadsPage() {
       const { data, error } = (await (supabase as any)
         .from('leads')
         .select('group')
-        .not('group', 'is', null)) as { data: { group: string | null }[] | null; error: Error | null };
+        .not('group', 'is', null)) as {
+        data: { group: string | null }[] | null;
+        error: Error | null;
+      };
 
       if (!error && data) {
         const groups = data
@@ -128,7 +131,9 @@ export default function LeadsPage() {
   const addLeadsToGroup = async (groupName: string) => {
     if (selectedLeads.length === 0) return;
 
-    const leadIds = selectedLeads.map((lead) => lead.id).filter((id): id is string => id !== undefined);
+    const leadIds = selectedLeads
+      .map((lead) => lead.id)
+      .filter((id): id is string => id !== undefined);
     if (leadIds.length === 0) return;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -147,7 +152,9 @@ export default function LeadsPage() {
   const removeFromGroup = async () => {
     if (selectedLeads.length === 0) return;
 
-    const leadIds = selectedLeads.map((lead) => lead.id).filter((id): id is string => id !== undefined);
+    const leadIds = selectedLeads
+      .map((lead) => lead.id)
+      .filter((id): id is string => id !== undefined);
     if (leadIds.length === 0) return;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

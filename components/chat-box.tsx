@@ -80,7 +80,10 @@ export function ChatBox({
 
   const handleSend = () => {
     if (messageText.trim() || attachedFiles.length > 0) {
-      onSendMessage(messageText, attachedFiles.length > 0 ? attachedFiles : undefined);
+      onSendMessage(
+        messageText,
+        attachedFiles.length > 0 ? attachedFiles : undefined,
+      );
       setMessageText('');
       setAttachedFiles([]);
       setPreviewUrls((prev) => {
@@ -133,7 +136,9 @@ export function ChatBox({
                 key={message.id}
                 className={cn(
                   'flex',
-                  message.direction === 'outbound' ? 'justify-end' : 'justify-start'
+                  message.direction === 'outbound'
+                    ? 'justify-end'
+                    : 'justify-start',
                 )}
               >
                 <div
@@ -141,7 +146,7 @@ export function ChatBox({
                     'max-w-[70%] rounded-2xl px-4 py-2',
                     message.direction === 'outbound'
                       ? 'bg-primary text-primary-foreground'
-                      : 'bg-gray-100 dark:bg-gray-800'
+                      : 'bg-gray-100 dark:bg-gray-800',
                   )}
                 >
                   {message.subject && (
@@ -150,13 +155,15 @@ export function ChatBox({
                         'mb-1 text-xs font-medium',
                         message.direction === 'outbound'
                           ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground'
+                          : 'text-muted-foreground',
                       )}
                     >
                       {message.subject}
                     </p>
                   )}
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                  <p className="whitespace-pre-wrap text-sm">
+                    {message.content}
+                  </p>
                   {/* Render attachments */}
                   {message.attachments && message.attachments.length > 0 && (
                     <div className="mt-2 space-y-2">
@@ -177,7 +184,7 @@ export function ChatBox({
                                 'text-sm underline',
                                 message.direction === 'outbound'
                                   ? 'text-primary-foreground'
-                                  : 'text-primary'
+                                  : 'text-primary',
                               )}
                             >
                               {attachment.name}
@@ -192,7 +199,7 @@ export function ChatBox({
                       'mt-1 text-right text-xs',
                       message.direction === 'outbound'
                         ? 'text-primary-foreground/70'
-                        : 'text-muted-foreground'
+                        : 'text-muted-foreground',
                     )}
                   >
                     {formatMessageTime(message.timestamp)}
@@ -221,7 +228,9 @@ export function ChatBox({
                     />
                   ) : (
                     <div className="flex h-16 items-center rounded-lg bg-gray-100 px-3 dark:bg-gray-800">
-                      <span className="max-w-24 truncate text-xs">{file.name}</span>
+                      <span className="max-w-24 truncate text-xs">
+                        {file.name}
+                      </span>
                     </div>
                   )}
                   <button
@@ -268,7 +277,9 @@ export function ChatBox({
             />
             <Button
               onClick={handleSend}
-              disabled={isSending || (!messageText.trim() && attachedFiles.length === 0)}
+              disabled={
+                isSending || (!messageText.trim() && attachedFiles.length === 0)
+              }
               className="h-auto"
             >
               {isSending ? (

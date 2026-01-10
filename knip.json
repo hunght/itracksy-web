@@ -19,20 +19,12 @@
     ".next/**",
     "node_modules/**"
   ],
-  "ignoreDependencies": [
-    "prettier-plugin-tailwindcss"
-  ],
-  "ignoreBinaries": [
-    "supabase"
-  ],
+  "ignoreDependencies": ["prettier-plugin-tailwindcss"],
+  "ignoreBinaries": ["supabase"],
   "rules": {
     "duplicates": "off"
   },
   "next": {
-    "entry": [
-      "next.config.{js,ts,mjs}",
-      "app/**/*.{ts,tsx}",
-      "proxy.{js,ts}"
-    ]
+    "entry": ["next.config.{js,ts,mjs}", "app/**/*.{ts,tsx}", "proxy.{js,ts}"]
   }
 }

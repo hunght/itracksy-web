@@ -81,7 +81,9 @@
     "eslint-config-next": "15.5.9",
     "husky": "^9.1.7",
     "knip": "^5.80.2",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
+    "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "rehype-autolink-headings": "^7.1.0",
     "rehype-pretty-code": "^0.13.0",
@@ -90,5 +92,10 @@
     "tailwindcss": "^3.4.0",
     "typescript": "^5.6.3"
   },
-  "packageManager": "pnpm@9.6.0"
+  "packageManager": "pnpm@9.6.0",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,css,md}": [
+      "prettier --write"
+    ]
+  }
 }

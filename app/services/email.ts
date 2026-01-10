@@ -145,7 +145,12 @@ export async function sendFeedbackNotificationEmail(
     await sendEmailWithRetry({
       to: toEmail,
       subject: `Thank you for your feedback, ${name}!`,
-      react: FeedbackNotificationEmail({ name, email, feedbackType, message }) as React.ReactElement,
+      react: FeedbackNotificationEmail({
+        name,
+        email,
+        feedbackType,
+        message,
+      }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'feedback_confirmation' },
         { name: 'feedback_type', value: feedbackType },
@@ -171,7 +176,12 @@ export async function sendFeedbackNotificationEmail(
     await sendEmailWithRetry({
       to: supportEmail,
       subject: `New Feedback: ${feedbackType} from ${name}`,
-      react: FeedbackNotificationEmail({ name, email, feedbackType, message }) as React.ReactElement,
+      react: FeedbackNotificationEmail({
+        name,
+        email,
+        feedbackType,
+        message,
+      }) as React.ReactElement,
       tags: [
         { name: 'email_type', value: 'feedback_notification' },
         { name: 'feedback_type', value: feedbackType },

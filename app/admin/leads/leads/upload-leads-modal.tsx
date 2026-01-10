@@ -43,10 +43,12 @@ export function UploadLeadsModal() {
       const uniqueLeads = Array.from(emailMap.values());
       console.log('uniqueLeads', uniqueLeads);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any).from('leads').upsert(uniqueLeads, {
-        onConflict: 'email',
-        ignoreDuplicates: false, // Update existing records
-      });
+      const { error } = await (supabase as any)
+        .from('leads')
+        .upsert(uniqueLeads, {
+          onConflict: 'email',
+          ignoreDuplicates: false, // Update existing records
+        });
       if (error) throw error;
     },
   });

@@ -101,7 +101,10 @@ async function processCampaignsInBackground(
       .select(`*,lead:leads(id, name, email, created_at, submission_time)`)
       .eq('campaign_id', campaign.id)
       .eq('status', 'pending')
-      .filter('lead.submission_time', 'not.is', null)) as unknown as { data: CampaignLeadWithLead[] | null; error: Error | null };
+      .filter('lead.submission_time', 'not.is', null)) as unknown as {
+      data: CampaignLeadWithLead[] | null;
+      error: Error | null;
+    };
 
     if (leadsError) {
       console.error('Error fetching campaign leads:', leadsError);

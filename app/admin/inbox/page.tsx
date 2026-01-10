@@ -7,12 +7,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChatBox, ChatMessage } from '@/components/chat-box';
-import {
-  RefreshCw,
-  User,
-  Inbox,
-  Circle,
-} from 'lucide-react';
+import { RefreshCw, User, Inbox, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Email = {
@@ -42,10 +37,15 @@ type Conversation = {
 const formatTime = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   } else if (diffDays === 1) {
     return 'Yesterday';
   } else if (diffDays < 7) {
@@ -56,7 +56,9 @@ const formatTime = (dateString: string) => {
 
 export default function InboxPage() {
   const supabase = useSupabaseBrowser();
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<
+    string | null
+  >(null);
 
   const {
     data: emails = [],
@@ -79,7 +81,8 @@ export default function InboxPage() {
     const grouped = new Map<string, Email[]>();
 
     emails.forEach((email) => {
-      const key = email.direction === 'inbound' ? email.from_email : email.to_email;
+      const key =
+        email.direction === 'inbound' ? email.from_email : email.to_email;
       if (!grouped.has(key)) {
         grouped.set(key, []);
       }
@@ -89,12 +92,18 @@ export default function InboxPage() {
     return Array.from(grouped.entries())
       .map(([email, messages]) => {
         const sortedMessages = messages.sort(
-          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         );
         const lastMessage = sortedMessages[sortedMessages.length - 1];
-        const inboundMessages = messages.filter((m) => m.direction === 'inbound');
-        const name = inboundMessages.find((m) => m.from_name)?.from_name || null;
-        const unreadCount = messages.filter((m) => !m.is_read && m.direction === 'inbound').length;
+        const inboundMessages = messages.filter(
+          (m) => m.direction === 'inbound',
+        );
+        const name =
+          inboundMessages.find((m) => m.from_name)?.from_name || null;
+        const unreadCount = messages.filter(
+          (m) => !m.is_read && m.direction === 'inbound',
+        ).length;
 
         return {
           email,
@@ -105,10 +114,15 @@ export default function InboxPage() {
           messages: sortedMessages,
         };
       })
-      .sort((a, b) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime(),
+      );
   })();
 
-  const currentConversation = conversations.find((c) => c.email === selectedConversation);
+  const currentConversation = conversations.find(
+    (c) => c.email === selectedConversation,
+  );
 
   // Mark messages as read when conversation is selected
   const markAsRead = useMutation({
@@ -173,7 +187,8 @@ export default function InboxPage() {
     onError: (error) => {
       toast({
         title: 'Failed to send',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       });
     },
@@ -217,9 +232,13 @@ export default function InboxPage() {
 
         <ScrollArea className="min-h-0 flex-1">
           {isLoading ? (
-            <div className="p-4 text-center text-muted-foreground">Loading...</div>
+            <div className="p-4 text-center text-muted-foreground">
+              Loading...
+            </div>
           ) : conversations.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">No conversations</div>
+            <div className="p-4 text-center text-muted-foreground">
+              No conversations
+            </div>
           ) : (
             <div className="divide-y">
               {conversations.map((conv) => (
@@ -228,7 +247,8 @@ export default function InboxPage() {
                   onClick={() => setSelectedConversation(conv.email)}
                   className={cn(
                     'w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                    selectedConversation === conv.email && 'bg-gray-100 dark:bg-gray-800',
+                    selectedConversation === conv.email &&
+                      'bg-gray-100 dark:bg-gray-800',
                   )}
                 >
                   <div className="flex items-start gap-3">
@@ -237,10 +257,12 @@ export default function InboxPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <span className={cn(
-                          'truncate text-sm',
-                          conv.unreadCount > 0 && 'font-semibold'
-                        )}>
+                        <span
+                          className={cn(
+                            'truncate text-sm',
+                            conv.unreadCount > 0 && 'font-semibold',
+                          )}
+                        >
                           {conv.name || conv.email.split('@')[0]}
                         </span>
                         <span className="ml-2 flex-shrink-0 text-xs text-muted-foreground">
@@ -250,10 +272,12 @@ export default function InboxPage() {
                       <p className="truncate text-xs text-muted-foreground">
                         {conv.email}
                       </p>
-                      <p className={cn(
-                        'mt-1 truncate text-sm text-muted-foreground',
-                        conv.unreadCount > 0 && 'font-medium text-foreground'
-                      )}>
+                      <p
+                        className={cn(
+                          'mt-1 truncate text-sm text-muted-foreground',
+                          conv.unreadCount > 0 && 'font-medium text-foreground',
+                        )}
+                      >
                         {conv.lastMessage}
                       </p>
                     </div>
@@ -282,9 +306,12 @@ export default function InboxPage() {
               </div>
               <div>
                 <p className="font-medium">
-                  {currentConversation.name || currentConversation.email.split('@')[0]}
+                  {currentConversation.name ||
+                    currentConversation.email.split('@')[0]}
                 </p>
-                <p className="text-sm text-muted-foreground">{currentConversation.email}</p>
+                <p className="text-sm text-muted-foreground">
+                  {currentConversation.email}
+                </p>
               </div>
             </div>
           }
@@ -293,7 +320,9 @@ export default function InboxPage() {
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
           <Inbox className="mb-4 h-16 w-16" />
           <p className="text-lg">Select a conversation</p>
-          <p className="text-sm">Choose a conversation from the left to start messaging</p>
+          <p className="text-sm">
+            Choose a conversation from the left to start messaging
+          </p>
         </div>
       )}
     </div>

@@ -16,7 +16,7 @@ export async function createSupabaseClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -47,7 +47,7 @@ export async function createAdminClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // Ignore errors from Server Components
@@ -58,5 +58,9 @@ export async function createAdminClient() {
   );
 }
 
-export type TypedSupabaseClient = Awaited<ReturnType<typeof createSupabaseClient>>;
-export type TypedAdminSupabaseClient = Awaited<ReturnType<typeof createAdminClient>>;
+export type TypedSupabaseClient = Awaited<
+  ReturnType<typeof createSupabaseClient>
+>;
+export type TypedAdminSupabaseClient = Awaited<
+  ReturnType<typeof createAdminClient>
+>;

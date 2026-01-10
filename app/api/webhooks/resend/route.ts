@@ -80,12 +80,21 @@ export async function POST(request: NextRequest) {
           .from('marketing_campaigns')
           .select('id')
           .eq('status', 'active')
-          .single()) as unknown as { data: { id: string } | null; error: Error | null };
+          .single()) as unknown as {
+          data: { id: string } | null;
+          error: Error | null;
+        };
       if (activeCampaignError || !activeCampaigns) {
         // No active campaign - this might be a non-campaign email (e.g., support reply)
         // Just log and return success
-        console.log('No active campaign found, skipping campaign tracking for:', recipientEmail);
-        return NextResponse.json({ success: true, message: 'No active campaign' });
+        console.log(
+          'No active campaign found, skipping campaign tracking for:',
+          recipientEmail,
+        );
+        return NextResponse.json({
+          success: true,
+          message: 'No active campaign',
+        });
       }
 
       campaignId = activeCampaigns.id;
@@ -105,7 +114,12 @@ export async function POST(request: NextRequest) {
     }
 
     // If this is related to a campaign (has campaign_id tag)
-    type CampaignLeadResult = { id: string; campaign_id: string; lead_id: string; sent_at: string | null };
+    type CampaignLeadResult = {
+      id: string;
+      campaign_id: string;
+      lead_id: string;
+      sent_at: string | null;
+    };
 
     if (campaignId) {
       const leadId = tagsObject.lead_id;
@@ -119,7 +133,10 @@ export async function POST(request: NextRequest) {
           .select('id, campaign_id, lead_id, sent_at')
           .eq('campaign_id', campaignId)
           .eq('lead_id', leadId)
-          .single()) as unknown as { data: CampaignLeadResult | null; error: Error | null };
+          .single()) as unknown as {
+          data: CampaignLeadResult | null;
+          error: Error | null;
+        };
       } else {
         // Fallback to using email lookup
         campaignLeadsQuery = (await supabase
@@ -127,7 +144,10 @@ export async function POST(request: NextRequest) {
           .select('id, campaign_id, lead_id, sent_at')
           .eq('campaign_id', campaignId)
           .eq('lead:leads(email)', recipientEmail)
-          .single()) as unknown as { data: CampaignLeadResult | null; error: Error | null };
+          .single()) as unknown as {
+          data: CampaignLeadResult | null;
+          error: Error | null;
+        };
       }
 
       const { data: campaignLeads, error: findError } = campaignLeadsQuery;

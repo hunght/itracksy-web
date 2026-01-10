@@ -138,7 +138,9 @@ export function FeedbackDetailModal({
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{feedback.email || 'Not provided'}</p>
+                <p className="font-medium">
+                  {feedback.email || 'Not provided'}
+                </p>
               </div>
             </div>
           </div>

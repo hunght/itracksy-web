@@ -176,8 +176,7 @@ export function EmailThread({ feedbackId }: EmailThreadProps) {
 
             {/* Subject (only show if different from previous) */}
             {email.subject &&
-              (index === 0 ||
-                emails[index - 1]?.subject !== email.subject) && (
+              (index === 0 || emails[index - 1]?.subject !== email.subject) && (
                 <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                   {email.subject}
                 </p>

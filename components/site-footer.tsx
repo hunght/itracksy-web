@@ -28,8 +28,7 @@ export function SiteFooter() {
             </a>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} {siteConfig.name}. All rights
-            reserved.
+            © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
           </p>
         </div>
       </div>

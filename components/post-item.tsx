@@ -27,7 +27,9 @@ export function PostItem({
         </h2>
       </div>
       <div className="flex flex-wrap gap-2">
-        {tags?.map((tag) => <Tag tag={tag} key={tag} />)}
+        {tags?.map((tag) => (
+          <Tag tag={tag} key={tag} />
+        ))}
       </div>
       <div className="max-w-none text-muted-foreground">{description}</div>
       <div className="flex items-center justify-between">

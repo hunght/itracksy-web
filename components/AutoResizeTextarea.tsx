@@ -2,8 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
-interface AutoResizeTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface AutoResizeTextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   defaultValue: string;
   onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }

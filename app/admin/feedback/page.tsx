@@ -75,7 +75,8 @@ const feedbackTypeConfig: Record<
   },
   feature: {
     icon: Lightbulb,
-    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    color:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
     label: 'Feature',
   },
   other: {
@@ -88,10 +89,15 @@ const feedbackTypeConfig: Record<
 const formatTime = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   } else if (diffDays === 1) {
     return 'Yesterday';
   } else if (diffDays < 7) {
@@ -102,12 +108,18 @@ const formatTime = (dateString: string) => {
 
 export default function FeedbackPage() {
   const supabase = useSupabaseBrowser();
-  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null);
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(
+    null,
+  );
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch feedback
-  const { data: feedbackList = [], isLoading: loadingFeedback, refetch: refetchFeedback } = useQuery<Feedback[]>({
+  const {
+    data: feedbackList = [],
+    isLoading: loadingFeedback,
+    refetch: refetchFeedback,
+  } = useQuery<Feedback[]>({
     queryKey: ['feedback', typeFilter],
     queryFn: async () => {
       let query = supabase
@@ -126,7 +138,9 @@ export default function FeedbackPage() {
   });
 
   // Fetch email threads for feedback
-  const { data: emailThreads = [], refetch: refetchEmails } = useQuery<EmailThread[]>({
+  const { data: emailThreads = [], refetch: refetchEmails } = useQuery<
+    EmailThread[]
+  >({
     queryKey: ['feedback-emails'],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -157,8 +171,13 @@ export default function FeedbackPage() {
     })
     .map((feedback) => {
       const emails = emailThreads.filter((e) => e.feedback_id === feedback.id);
-      const allDates = [feedback.created_at, ...emails.map((e) => e.created_at)];
-      const lastActivity = allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+      const allDates = [
+        feedback.created_at,
+        ...emails.map((e) => e.created_at),
+      ];
+      const lastActivity = allDates.sort(
+        (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+      )[0];
       const hasUnreplied = !feedback.replied_at;
 
       return {
@@ -168,9 +187,14 @@ export default function FeedbackPage() {
         hasUnreplied,
       };
     })
-    .sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime(),
+    );
 
-  const currentConversation = conversations.find((c) => c.feedback.id === selectedFeedbackId);
+  const currentConversation = conversations.find(
+    (c) => c.feedback.id === selectedFeedbackId,
+  );
 
   // Send reply
   const sendReply = useMutation({
@@ -185,7 +209,9 @@ export default function FeedbackPage() {
           to: currentConversation.feedback.email,
           subject: `Re: Your ${currentConversation.feedback.feedback_type} feedback`,
           message,
-          userName: currentConversation.feedback.name || currentConversation.feedback.email,
+          userName:
+            currentConversation.feedback.name ||
+            currentConversation.feedback.email,
           originalMessage: currentConversation.feedback.message,
           feedbackType: currentConversation.feedback.feedback_type,
         }),
@@ -205,7 +231,8 @@ export default function FeedbackPage() {
     onError: (error) => {
       toast({
         title: 'Failed to send',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
         variant: 'destructive',
       });
     },
@@ -257,19 +284,21 @@ export default function FeedbackPage() {
             )}
           </div>
           <Button variant="ghost" size="sm" onClick={() => refetch()}>
-            <RefreshCw className={cn('h-4 w-4', loadingFeedback && 'animate-spin')} />
+            <RefreshCw
+              className={cn('h-4 w-4', loadingFeedback && 'animate-spin')}
+            />
           </Button>
         </div>
 
         {/* Filters */}
-        <div className="flex-shrink-0 border-b p-3 space-y-2">
+        <div className="flex-shrink-0 space-y-2 border-b p-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-sm"
+              className="h-8 pl-9 text-sm"
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -288,13 +317,19 @@ export default function FeedbackPage() {
 
         <ScrollArea className="min-h-0 flex-1">
           {loadingFeedback ? (
-            <div className="p-4 text-center text-muted-foreground">Loading...</div>
+            <div className="p-4 text-center text-muted-foreground">
+              Loading...
+            </div>
           ) : conversations.length === 0 ? (
-            <div className="p-4 text-center text-muted-foreground">No feedback found</div>
+            <div className="p-4 text-center text-muted-foreground">
+              No feedback found
+            </div>
           ) : (
             <div className="divide-y">
               {conversations.map((conv) => {
-                const typeConfig = feedbackTypeConfig[conv.feedback.feedback_type] || feedbackTypeConfig.other;
+                const typeConfig =
+                  feedbackTypeConfig[conv.feedback.feedback_type] ||
+                  feedbackTypeConfig.other;
                 const TypeIcon = typeConfig.icon;
 
                 return (
@@ -303,7 +338,8 @@ export default function FeedbackPage() {
                     onClick={() => setSelectedFeedbackId(conv.feedback.id)}
                     className={cn(
                       'w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                      selectedFeedbackId === conv.feedback.id && 'bg-gray-100 dark:bg-gray-800',
+                      selectedFeedbackId === conv.feedback.id &&
+                        'bg-gray-100 dark:bg-gray-800',
                     )}
                   >
                     <div className="flex items-start gap-3">
@@ -312,19 +348,28 @@ export default function FeedbackPage() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className={cn(
-                            'truncate text-sm',
-                            conv.hasUnreplied && 'font-semibold'
-                          )}>
-                            {conv.feedback.name?.replace('iTracksy:', '') || 'Anonymous'}
+                          <span
+                            className={cn(
+                              'truncate text-sm',
+                              conv.hasUnreplied && 'font-semibold',
+                            )}
+                          >
+                            {conv.feedback.name?.replace('iTracksy:', '') ||
+                              'Anonymous'}
                           </span>
                           <span className="flex-shrink-0 text-xs text-muted-foreground">
                             {formatTime(conv.lastActivity)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <Badge variant="secondary" className={cn('text-xs px-1.5 py-0', typeConfig.color)}>
-                            <TypeIcon className="h-3 w-3 mr-1" />
+                        <div className="mt-0.5 flex items-center gap-2">
+                          <Badge
+                            variant="secondary"
+                            className={cn(
+                              'px-1.5 py-0 text-xs',
+                              typeConfig.color,
+                            )}
+                          >
+                            <TypeIcon className="mr-1 h-3 w-3" />
                             {typeConfig.label}
                           </Badge>
                           {conv.emails.length > 0 && (
@@ -333,10 +378,12 @@ export default function FeedbackPage() {
                             </span>
                           )}
                         </div>
-                        <p className={cn(
-                          'mt-1 truncate text-sm text-muted-foreground',
-                          conv.hasUnreplied && 'font-medium text-foreground'
-                        )}>
+                        <p
+                          className={cn(
+                            'mt-1 truncate text-sm text-muted-foreground',
+                            conv.hasUnreplied && 'font-medium text-foreground',
+                          )}
+                        >
                           {conv.feedback.message}
                         </p>
                       </div>
@@ -368,7 +415,10 @@ export default function FeedbackPage() {
                 </div>
                 <div>
                   <p className="font-medium">
-                    {currentConversation.feedback.name?.replace('iTracksy:', '') || 'Anonymous'}
+                    {currentConversation.feedback.name?.replace(
+                      'iTracksy:',
+                      '',
+                    ) || 'Anonymous'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {currentConversation.feedback.email || 'No email'}
@@ -377,9 +427,13 @@ export default function FeedbackPage() {
               </div>
               <Badge
                 variant="secondary"
-                className={feedbackTypeConfig[currentConversation.feedback.feedback_type]?.color}
+                className={
+                  feedbackTypeConfig[currentConversation.feedback.feedback_type]
+                    ?.color
+                }
               >
-                {feedbackTypeConfig[currentConversation.feedback.feedback_type]?.label || 'Other'}
+                {feedbackTypeConfig[currentConversation.feedback.feedback_type]
+                  ?.label || 'Other'}
               </Badge>
             </>
           }
@@ -388,7 +442,9 @@ export default function FeedbackPage() {
         <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
           <MessageSquare className="mb-4 h-16 w-16" />
           <p className="text-lg">Select a feedback</p>
-          <p className="text-sm">Choose a feedback from the left to view conversation</p>
+          <p className="text-sm">
+            Choose a feedback from the left to view conversation
+          </p>
         </div>
       )}
     </div>

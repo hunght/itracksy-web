@@ -14,7 +14,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             staleTime: 60 * 1000,
           },
         },
-      })
+      }),
   );
 
   return (

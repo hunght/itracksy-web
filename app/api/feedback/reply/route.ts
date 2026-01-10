@@ -68,7 +68,15 @@ export async function POST(request: Request) {
     }
 
     // Store outbound email in email_threads for conversation tracking
-    const { error: insertError } = await (supabase as unknown as { from: (table: string) => { insert: (data: Record<string, unknown>) => Promise<{ error: Error | null }> } })
+    const { error: insertError } = await (
+      supabase as unknown as {
+        from: (table: string) => {
+          insert: (
+            data: Record<string, unknown>,
+          ) => Promise<{ error: Error | null }>;
+        };
+      }
+    )
       .from('email_threads')
       .insert({
         message_id: emailResult?.id || `outbound-${Date.now()}`,
@@ -90,7 +98,18 @@ export async function POST(request: Request) {
 
     // Update feedback record with replied_at timestamp
     if (feedbackId && feedbackId !== 'direct-email') {
-      const { error: updateError } = await (supabase as unknown as { from: (table: string) => { update: (data: Record<string, unknown>) => { eq: (column: string, value: string) => Promise<{ error: Error | null }> } } })
+      const { error: updateError } = await (
+        supabase as unknown as {
+          from: (table: string) => {
+            update: (data: Record<string, unknown>) => {
+              eq: (
+                column: string,
+                value: string,
+              ) => Promise<{ error: Error | null }>;
+            };
+          };
+        }
+      )
         .from('feedback')
         .update({ replied_at: new Date().toISOString() })
         .eq('id', feedbackId);

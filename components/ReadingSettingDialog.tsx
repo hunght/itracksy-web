@@ -25,14 +25,13 @@ import { useAtom } from 'jotai';
 import { fontAtom, speedAtom, themeAtom } from '@/state/fastReadSettings';
 import { useState } from 'react';
 
-interface ReadingSettingDialogProps { }
+interface ReadingSettingDialogProps {}
 
-export function ReadingSettingDialog({ }: ReadingSettingDialogProps) {
+export function ReadingSettingDialog({}: ReadingSettingDialogProps) {
   const [speed, setSpeed] = useAtom(speedAtom);
   const [font, setFont] = useAtom(fontAtom);
   const [theme, setTheme] = useAtom(themeAtom);
   const [isOpen, setIsOpen] = useState(false);
-
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

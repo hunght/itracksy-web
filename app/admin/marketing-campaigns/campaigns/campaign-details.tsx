@@ -68,7 +68,10 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
           lead:leads(id, name, email, created_at)
         `,
         )
-        .eq('campaign_id', campaign.id)) as { data: CampaignLeadWithLeadData[] | null; error: Error | null };
+        .eq('campaign_id', campaign.id)) as {
+        data: CampaignLeadWithLeadData[] | null;
+        error: Error | null;
+      };
 
       if (error) throw error;
       return data;
@@ -77,7 +80,9 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
 
   // Extract just the leads for the SendCampaignModal
   const leadsForCampaign =
-    campaignLeads?.map((cl) => cl.lead).filter((lead): lead is NonNullable<typeof lead> => lead !== null) || [];
+    campaignLeads
+      ?.map((cl) => cl.lead)
+      .filter((lead): lead is NonNullable<typeof lead> => lead !== null) || [];
 
   const { mutate: updateCampaignStatus, isPending: isUpdating } = useMutation({
     mutationFn: async (status: string) => {

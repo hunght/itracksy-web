@@ -9,6 +9,7 @@ The itracksy-web project now has an automated icon generation system that create
 ## 📁 Files Created
 
 ### 1. **Source Logo**
+
 - `/public/logo.svg` - Brand logo (copied from itracksy app)
   - Time-tracking themed clock design
   - Purple to pink gradient (#8B5CF6 → #EC4899)
@@ -16,6 +17,7 @@ The itracksy-web project now has an automated icon generation system that create
   - Success green productivity arc (#10B981)
 
 ### 2. **Icon Generation Script**
+
 - `/scripts/generate-icons.mjs` - ES6 module script
   - Generates PNG icons in multiple sizes
   - Creates multi-resolution favicon.ico
@@ -33,6 +35,7 @@ pnpm run generate:icons
 ```
 
 This command will:
+
 1. Read `/public/logo.svg`
 2. Generate PNG icons in various sizes
 3. Create a multi-resolution `favicon.ico`
@@ -42,20 +45,20 @@ This command will:
 
 The script creates the following files in `/public/`:
 
-| File | Size | Purpose |
-|------|------|---------|
-| `favicon.png` | 32×32 | Browser favicon (PNG) |
-| `favicon.ico` | Multi | Browser favicon (ICO format) |
-| `apple-touch-icon.png` | 180×180 | iOS home screen icon |
-| `android-chrome-192x192.png` | 192×192 | Android icon (standard) |
-| `android-chrome-512x512.png` | 512×512 | Android icon (high-res) |
-| `icon-300.png` | 300×300 | Open Graph / social media |
-| `logo-16.png` | 16×16 | Tiny icon |
-| `logo-48.png` | 48×48 | Small icon |
-| `logo-64.png` | 64×64 | Medium icon |
-| `logo-128.png` | 128×128 | Large icon |
-| `logo-256.png` | 256×256 | Extra large icon |
-| `logo-1024.png` | 1024×1024 | Maximum resolution |
+| File                         | Size      | Purpose                      |
+| ---------------------------- | --------- | ---------------------------- |
+| `favicon.png`                | 32×32     | Browser favicon (PNG)        |
+| `favicon.ico`                | Multi     | Browser favicon (ICO format) |
+| `apple-touch-icon.png`       | 180×180   | iOS home screen icon         |
+| `android-chrome-192x192.png` | 192×192   | Android icon (standard)      |
+| `android-chrome-512x512.png` | 512×512   | Android icon (high-res)      |
+| `icon-300.png`               | 300×300   | Open Graph / social media    |
+| `logo-16.png`                | 16×16     | Tiny icon                    |
+| `logo-48.png`                | 48×48     | Small icon                   |
+| `logo-64.png`                | 64×64     | Medium icon                  |
+| `logo-128.png`               | 128×128   | Large icon                   |
+| `logo-256.png`               | 256×256   | Extra large icon             |
+| `logo-1024.png`              | 1024×1024 | Maximum resolution           |
 
 ---
 
@@ -162,8 +165,18 @@ Add these to your HTML `<head>`:
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
 <!-- Android Chrome -->
-<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
-<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+<link
+  rel="icon"
+  type="image/png"
+  sizes="192x192"
+  href="/android-chrome-192x192.png"
+/>
+<link
+  rel="icon"
+  type="image/png"
+  sizes="512x512"
+  href="/android-chrome-512x512.png"
+/>
 
 <!-- Open Graph -->
 <meta property="og:image" content="/icon-300.png" />
@@ -185,7 +198,7 @@ export const metadata = {
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
-}
+};
 ```
 
 ---
@@ -211,6 +224,7 @@ Total size for all icons: ~133 KB
 After generating icons, verify:
 
 1. **Files Created**
+
    ```bash
    ls -lh public/*.png public/*.ico
    ```
@@ -236,10 +250,12 @@ After generating icons, verify:
 ### Script Fails
 
 **Error**: "Source SVG not found"
+
 - **Solution**: Ensure `/public/logo.svg` exists
 - Copy from app repo if missing
 
 **Error**: "sharp installation failed"
+
 - **Solution**: Run `pnpm install` with full permissions
 - May need to rebuild: `pnpm rebuild sharp`
 
@@ -271,19 +287,19 @@ Quick reference for the logo colors:
 
 ```css
 /* Primary Purple */
---brand-purple: #8B5CF6;
+--brand-purple: #8b5cf6;
 
 /* Secondary Pink */
---brand-pink: #EC4899;
+--brand-pink: #ec4899;
 
 /* Cyan */
---brand-cyan: #06B6D4;
+--brand-cyan: #06b6d4;
 
 /* Blue */
---brand-blue: #3B82F6;
+--brand-blue: #3b82f6;
 
 /* Success Green */
---brand-green: #10B981;
+--brand-green: #10b981;
 ```
 
 ---
@@ -291,13 +307,3 @@ Quick reference for the logo colors:
 **Last Updated:** December 4, 2024
 **Version:** 1.0.0
 **Status:** ✅ Complete and Working
-
-
-
-
-
-
-
-
-
-

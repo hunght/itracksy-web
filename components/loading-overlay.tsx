@@ -6,8 +6,8 @@ const LoadingOverlay: React.FunctionComponent<{ loading: boolean }> = ({
   if (!loading) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-      <div className="w-8 h-8 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-dotted border-blue-500"></div>
     </div>
   );
 };
