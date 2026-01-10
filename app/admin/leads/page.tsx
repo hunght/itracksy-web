@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
@@ -24,7 +24,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Tag, Plus, Calendar } from 'lucide-react';
+import {
+  Tag,
+  Plus,
+  Calendar,
+  Users,
+  Mail,
+  Search,
+  RefreshCw,
+  Trash2,
+  UserPlus,
+} from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -33,6 +43,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Function to format date
 const formatDate = (dateString: string | null) => {
@@ -55,11 +67,11 @@ export default function LeadsPage() {
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [newGroupName, setNewGroupName] = useState('');
   const [showGroupInput, setShowGroupInput] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     data: leadsList = [],
     isLoading,
-    isError,
     refetch,
   } = useQuery<Lead[]>({
     queryKey: ['leads', groupFilter],
@@ -83,7 +95,6 @@ export default function LeadsPage() {
   // Fetch available groups
   useEffect(() => {
     const fetchGroups = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = (await (supabase as any)
         .from('leads')
         .select('group')
@@ -107,6 +118,19 @@ export default function LeadsPage() {
     fetchGroups();
   }, [supabase, leadsList]);
 
+  // Filter leads by search
+  const filteredLeads = useMemo(() => {
+    if (!searchQuery) return leadsList;
+    const query = searchQuery.toLowerCase();
+    return leadsList.filter(
+      (lead) =>
+        lead.name?.toLowerCase().includes(query) ||
+        lead.email?.toLowerCase().includes(query) ||
+        lead.message?.toLowerCase().includes(query) ||
+        lead.group?.toLowerCase().includes(query),
+    );
+  }, [leadsList, searchQuery]);
+
   // Handle lead selection
   const toggleLeadSelection = (lead: Lead) => {
     if (selectedLeads.some((selected) => selected.id === lead.id)) {
@@ -120,10 +144,10 @@ export default function LeadsPage() {
 
   // Select/deselect all leads
   const toggleSelectAll = () => {
-    if (selectedLeads.length === leadsList.length) {
+    if (selectedLeads.length === filteredLeads.length) {
       setSelectedLeads([]);
     } else {
-      setSelectedLeads([...leadsList]);
+      setSelectedLeads([...filteredLeads]);
     }
   };
 
@@ -136,7 +160,6 @@ export default function LeadsPage() {
       .filter((id): id is string => id !== undefined);
     if (leadIds.length === 0) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from('leads')
       .update({ group: groupName })
@@ -157,10 +180,29 @@ export default function LeadsPage() {
       .filter((id): id is string => id !== undefined);
     if (leadIds.length === 0) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from('leads')
       .update({ group: null })
+      .in('id', leadIds);
+
+    if (!error) {
+      refetch();
+      setSelectedLeads([]);
+    }
+  };
+
+  // Delete selected leads
+  const deleteSelectedLeads = async () => {
+    if (selectedLeads.length === 0) return;
+
+    const leadIds = selectedLeads
+      .map((lead) => lead.id)
+      .filter((id): id is string => id !== undefined);
+    if (leadIds.length === 0) return;
+
+    const { error } = await (supabase as any)
+      .from('leads')
+      .delete()
       .in('id', leadIds);
 
     if (!error) {
@@ -178,79 +220,156 @@ export default function LeadsPage() {
     setShowGroupInput(false);
   };
 
-  const filteredLeads = leadsList;
+  // Calculate stats
+  const stats = {
+    total: leadsList.length,
+    withEmail: leadsList.filter((l) => l.email).length,
+    groups: availableGroups.length,
+  };
 
   return (
-    <div className="container mx-auto py-10">
-      <Card className="mx-auto max-w-6xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Leads Management</CardTitle>
-          <div className="flex space-x-2">
-            <CreateLeadModal />
-            <UploadLeadsModal />
+    <div className="flex h-full flex-col overflow-hidden">
+      {/* Stats Cards */}
+      <div className="grid-shrink-0 mb-6 grid grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-primary/10 p-3">
+              <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Leads</p>
+              <p className="text-2xl font-bold">{stats.total}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-green-100 p-3 dark:bg-green-900">
+              <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">With Email</p>
+              <p className="text-2xl font-bold">{stats.withEmail}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="rounded-lg bg-purple-100 p-3 dark:bg-purple-900">
+              <Tag className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Groups</p>
+              <p className="text-2xl font-bold">{stats.groups}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Content */}
+      <Card className="flex min-h-0 flex-1 flex-col">
+        <CardHeader className="flex-shrink-0 border-b">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5" />
+              Leads Management
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={() => refetch()}>
+                <RefreshCw
+                  className={cn('h-4 w-4', isLoading && 'animate-spin')}
+                />
+              </Button>
+              <CreateLeadModal />
+              <UploadLeadsModal />
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="mb-6 flex flex-wrap items-center gap-4">
-            <div className="flex-1">
-              <Select
-                value={groupFilter || 'all'}
-                onValueChange={(value) =>
-                  setGroupFilter(value === 'all' ? null : value)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Filter by group" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Leads</SelectItem>
-                  {availableGroups.map((group) => (
-                    <SelectItem key={group} value={group}>
-                      {group}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <CardContent className="flex min-h-0 flex-1 flex-col p-4">
+          {/* Filters */}
+          <div className="mb-4 flex flex-shrink-0 flex-wrap items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Search by name, email, or message..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
             </div>
-
-            {selectedLeads.length > 0 && (
-              <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      <Tag className="mr-2 h-4 w-4" />
-                      Add to Group
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {availableGroups.map((group) => (
-                      <DropdownMenuItem
-                        key={group}
-                        onClick={() => addLeadsToGroup(group)}
-                      >
-                        {group}
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuItem onClick={() => setShowGroupInput(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Create New Group
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button size="sm" variant="outline" onClick={removeFromGroup}>
-                  Remove from Group
-                </Button>
-              </div>
-            )}
+            <Select
+              value={groupFilter || 'all'}
+              onValueChange={(value) =>
+                setGroupFilter(value === 'all' ? null : value)
+              }
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by group" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Leads</SelectItem>
+                {availableGroups.map((group) => (
+                  <SelectItem key={group} value={group}>
+                    <div className="flex items-center gap-2">
+                      <Tag className="h-3 w-3" />
+                      {group}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* Selection actions */}
+          {selectedLeads.length > 0 && (
+            <div className="mb-4 flex flex-shrink-0 items-center gap-2 rounded-lg bg-muted p-3">
+              <span className="text-sm font-medium">
+                {selectedLeads.length} selected
+              </span>
+              <div className="flex-1" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline">
+                    <Tag className="mr-2 h-4 w-4" />
+                    Add to Group
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {availableGroups.map((group) => (
+                    <DropdownMenuItem
+                      key={group}
+                      onClick={() => addLeadsToGroup(group)}
+                    >
+                      {group}
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuItem onClick={() => setShowGroupInput(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create New Group
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button size="sm" variant="outline" onClick={removeFromGroup}>
+                Remove from Group
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={deleteSelectedLeads}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
+
           {showGroupInput && (
-            <div className="mb-4 flex items-center gap-2">
+            <div className="mb-4 flex flex-shrink-0 items-center gap-2">
               <Input
                 placeholder="New group name"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
+                className="max-w-xs"
               />
               <Button onClick={createNewGroup}>Create</Button>
               <Button
@@ -262,14 +381,25 @@ export default function LeadsPage() {
             </div>
           )}
 
-          {filteredLeads.length === 0 ? (
-            <p className="py-4 text-center text-muted-foreground">
-              No leads available.
-            </p>
+          {/* Table */}
+          {isLoading ? (
+            <div className="flex flex-1 items-center justify-center">
+              <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : filteredLeads.length === 0 ? (
+            <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
+              <Users className="mb-4 h-16 w-16" />
+              <p className="text-lg">No leads found</p>
+              <p className="text-sm">
+                {searchQuery
+                  ? 'Try a different search term'
+                  : 'Add your first lead to get started'}
+              </p>
+            </div>
           ) : (
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-md border">
+              <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-2">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="selectAll"
                     checked={
@@ -282,14 +412,11 @@ export default function LeadsPage() {
                     Select All
                   </label>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-gray-500">
-                    {selectedLeads.length} of {filteredLeads.length} selected
-                  </span>
-                </div>
+                <span className="text-sm text-muted-foreground">
+                  {filteredLeads.length} leads
+                </span>
               </div>
-
-              <div className="rounded-md border">
+              <ScrollArea className="h-[calc(100%-41px)]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -306,7 +433,13 @@ export default function LeadsPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredLeads.map((lead) => (
-                      <TableRow key={lead.id}>
+                      <TableRow
+                        key={lead.id}
+                        className={cn(
+                          selectedLeads.some((s) => s.id === lead.id) &&
+                            'bg-muted/50',
+                        )}
+                      >
                         <TableCell>
                           <Checkbox
                             id={`lead-${lead.id}`}
@@ -317,22 +450,37 @@ export default function LeadsPage() {
                           />
                         </TableCell>
                         <TableCell className="font-medium">
-                          {lead.name}
+                          {lead.name || (
+                            <span className="text-muted-foreground">
+                              No name
+                            </span>
+                          )}
                         </TableCell>
-                        <TableCell>{lead.email}</TableCell>
-                        <TableCell>{lead.phone}</TableCell>
+                        <TableCell>
+                          {lead.email || (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {lead.phone || (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {lead.group ? (
-                            <Badge variant="outline">{lead.group}</Badge>
+                            <Badge variant="outline" className="font-normal">
+                              <Tag className="mr-1 h-3 w-3" />
+                              {lead.group}
+                            </Badge>
                           ) : (
                             <span className="text-sm text-muted-foreground">
-                              None
+                              —
                             </span>
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center">
-                            <Calendar className="mr-1.5 h-3.5 w-3.5 text-gray-500" />
+                            <Calendar className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
                             <span className="text-sm">
                               {formatDate(lead.created_at ?? null)}
                             </span>
@@ -340,14 +488,16 @@ export default function LeadsPage() {
                         </TableCell>
                         <TableCell className="max-w-[250px]">
                           <p className="truncate text-sm text-muted-foreground">
-                            {lead.message || 'No message'}
+                            {lead.message || (
+                              <span className="italic">No message</span>
+                            )}
                           </p>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-              </div>
+              </ScrollArea>
             </div>
           )}
         </CardContent>

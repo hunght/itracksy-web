@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
 
 // Use service role for webhook (no user auth)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SERVICE_ROLE_KEY!,
 );
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Resend inbound email webhook payload type
 interface ResendInboundEmail {
@@ -74,24 +71,72 @@ async function findFeedbackByEmail(
   return data;
 }
 
-// Try to find feedback from previous email thread
-async function findFeedbackFromThread(
+// Try to find lead by email
+async function findLeadByEmail(email: string): Promise<{ id: string } | null> {
+  const { data, error } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('email', email)
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+  return data;
+}
+
+// Try to find campaign from lead's campaign_leads
+async function findCampaignFromLead(
+  leadId: string,
+): Promise<{ campaign_id: string } | null> {
+  // Get the most recent campaign this lead was part of
+  const { data, error } = await supabase
+    .from('campaign_leads')
+    .select('campaign_id')
+    .eq('lead_id', leadId)
+    .eq('status', 'sent')
+    .order('sent_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+  return data;
+}
+
+// Try to find feedback/campaign from previous email thread
+async function findContextFromThread(
   inReplyTo: string | undefined,
   references: string | undefined,
-): Promise<{ id: string } | null> {
-  if (!inReplyTo && !references) return null;
+): Promise<{
+  feedbackId: string | null;
+  campaignId: string | null;
+  leadId: string | null;
+}> {
+  const result = {
+    feedbackId: null as string | null,
+    campaignId: null as string | null,
+    leadId: null as string | null,
+  };
 
-  // First try in_reply_to
+  if (!inReplyTo && !references) return result;
+
+  // Try in_reply_to first
   if (inReplyTo) {
     const { data } = await supabase
       .from('email_threads')
-      .select('feedback_id')
+      .select('feedback_id, campaign_id, lead_id')
       .eq('message_id', inReplyTo)
       .limit(1)
       .single();
 
-    if (data?.feedback_id) {
-      return { id: data.feedback_id };
+    if (data) {
+      result.feedbackId = data.feedback_id;
+      result.campaignId = data.campaign_id;
+      result.leadId = data.lead_id;
+      return result;
     }
   }
 
@@ -101,26 +146,25 @@ async function findFeedbackFromThread(
     for (const refId of refIds) {
       const { data } = await supabase
         .from('email_threads')
-        .select('feedback_id')
+        .select('feedback_id, campaign_id, lead_id')
         .eq('message_id', refId)
         .limit(1)
         .single();
 
-      if (data?.feedback_id) {
-        return { id: data.feedback_id };
+      if (data && (data.feedback_id || data.campaign_id || data.lead_id)) {
+        result.feedbackId = data.feedback_id;
+        result.campaignId = data.campaign_id;
+        result.leadId = data.lead_id;
+        return result;
       }
     }
   }
 
-  return null;
+  return result;
 }
 
 export async function POST(request: Request) {
   try {
-    // Verify webhook signature (optional but recommended)
-    // const signature = request.headers.get('resend-signature');
-    // TODO: Verify signature with webhook secret
-
     const payload: ResendInboundEmail = await request.json();
 
     console.log(
@@ -138,15 +182,13 @@ export async function POST(request: Request) {
     let emailHtml = webhookData.html;
     let headers = webhookData.headers || {};
 
-    // Webhook doesn't include email body - fetch from Resend Receiving API
-    // See: https://resend.com/docs/dashboard/receiving/get-email-content
+    // Fetch full email content from Resend Receiving API
     if (webhookData.email_id) {
       console.log(
         '[Inbound Email] Fetching email content for:',
         webhookData.email_id,
       );
       try {
-        // Use Resend Receiving API to get full email content
         const response = await fetch(
           `https://api.resend.com/emails/receiving/${webhookData.email_id}`,
           {
@@ -188,22 +230,37 @@ export async function POST(request: Request) {
     // Parse sender info
     const sender = parseEmailAddress(webhookData.from);
 
-    // Try to find associated feedback
+    // Initialize context variables
     let feedbackId: string | null = null;
+    let campaignId: string | null = null;
+    let leadId: string | null = null;
 
-    // First, try to find from thread (in-reply-to or references)
-    const threadFeedback = await findFeedbackFromThread(
+    // 1. First, try to find context from email thread (in-reply-to or references)
+    const threadContext = await findContextFromThread(
       headers['in-reply-to'],
       headers.references,
     );
+    feedbackId = threadContext.feedbackId;
+    campaignId = threadContext.campaignId;
+    leadId = threadContext.leadId;
 
-    if (threadFeedback) {
-      feedbackId = threadFeedback.id;
-    } else {
-      // Fallback: try to find by sender email
-      const emailFeedback = await findFeedbackByEmail(sender.email);
-      if (emailFeedback) {
-        feedbackId = emailFeedback.id;
+    // 2. If no context found, try to find by sender email
+    if (!feedbackId && !campaignId && !leadId) {
+      // Try to find lead first (for campaign context)
+      const lead = await findLeadByEmail(sender.email);
+      if (lead) {
+        leadId = lead.id;
+        // Try to find campaign this lead was part of
+        const campaign = await findCampaignFromLead(lead.id);
+        if (campaign) {
+          campaignId = campaign.campaign_id;
+        }
+      }
+
+      // Try to find feedback by email
+      const feedback = await findFeedbackByEmail(sender.email);
+      if (feedback) {
+        feedbackId = feedback.id;
       }
     }
 
@@ -220,6 +277,8 @@ export async function POST(request: Request) {
       in_reply_to: headers['in-reply-to'] || null,
       references: headers.references || null,
       feedback_id: feedbackId,
+      campaign_id: campaignId,
+      lead_id: leadId,
       direction: 'inbound',
       is_read: false,
       received_at: webhookData.created_at,
@@ -236,11 +295,13 @@ export async function POST(request: Request) {
     console.log('[Inbound Email] Stored email from:', sender.email, {
       subject: webhookData.subject,
       feedbackId,
+      campaignId,
+      leadId,
       hasText: !!emailText,
       hasHtml: !!emailHtml,
     });
 
-    return NextResponse.json({ success: true, feedbackId });
+    return NextResponse.json({ success: true, feedbackId, campaignId, leadId });
   } catch (error) {
     console.error('Inbound email webhook error:', error);
     return NextResponse.json(

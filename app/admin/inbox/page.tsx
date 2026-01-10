@@ -38,6 +38,8 @@ import {
   MessageSquare,
   HelpCircle,
   Loader2,
+  Mail,
+  Megaphone,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +65,16 @@ type EmailThread = {
   direction: 'inbound' | 'outbound';
   is_read: boolean;
   feedback_id: string | null;
+  campaign_id: string | null;
+  lead_id: string | null;
   created_at: string;
+};
+
+type Campaign = {
+  id: string;
+  name: string;
+  email_subject: string;
+  status: string;
 };
 
 type UnifiedConversation = {
@@ -75,6 +86,9 @@ type UnifiedConversation = {
   feedbackType: string | null;
   feedbackMessage: string | null;
   feedbackCreatedAt: string | null;
+  campaignId: string | null;
+  campaignName: string | null;
+  leadId: string | null;
   messages: EmailThread[];
   lastActivity: string;
   unreadCount: number;
@@ -145,12 +159,26 @@ export default function InboxPage() {
     string | null
   >(null);
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [campaignFilter, setCampaignFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [newSubject, setNewSubject] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const [isSendingNew, setIsSendingNew] = useState(false);
+
+  // Fetch campaigns for filter
+  const { data: campaigns = [] } = useQuery<Campaign[]>({
+    queryKey: ['inbox-campaigns'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('marketing_campaigns')
+        .select('id, name, email_subject, status')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as Campaign[];
+    },
+  });
 
   // Fetch feedback
   const {
@@ -214,6 +242,9 @@ export default function InboxPage() {
         feedbackType: feedback.feedback_type,
         feedbackMessage: feedback.message,
         feedbackCreatedAt: feedback.created_at,
+        campaignId: null,
+        campaignName: null,
+        leadId: null,
         messages: [],
         lastActivity: feedback.created_at,
         unreadCount: 0,
@@ -238,6 +269,11 @@ export default function InboxPage() {
         }
       }
 
+      // Find campaign name if this email is from a campaign
+      const emailCampaign = email.campaign_id
+        ? campaigns.find((c) => c.id === email.campaign_id)
+        : null;
+
       if (conversationMap.has(targetKey)) {
         // Add to existing conversation
         const conv = conversationMap.get(targetKey)!;
@@ -247,6 +283,14 @@ export default function InboxPage() {
         }
         if (!email.is_read && email.direction === 'inbound') {
           conv.unreadCount++;
+        }
+        // Update campaign info if not already set
+        if (!conv.campaignId && email.campaign_id) {
+          conv.campaignId = email.campaign_id;
+          conv.campaignName = emailCampaign?.name || null;
+        }
+        if (!conv.leadId && email.lead_id) {
+          conv.leadId = email.lead_id;
         }
       } else {
         // Create new conversation from email
@@ -262,6 +306,9 @@ export default function InboxPage() {
           feedbackType: null,
           feedbackMessage: null,
           feedbackCreatedAt: null,
+          campaignId: email.campaign_id,
+          campaignName: emailCampaign?.name || null,
+          leadId: email.lead_id,
           messages: [email],
           lastActivity: email.created_at,
           unreadCount: !email.is_read && email.direction === 'inbound' ? 1 : 0,
@@ -286,6 +333,17 @@ export default function InboxPage() {
     // Convert to array and filter
     return Array.from(conversationMap.values())
       .filter((conv) => {
+        // Campaign filter
+        if (campaignFilter !== 'all') {
+          if (campaignFilter === 'campaigns') {
+            // Show only conversations from campaigns
+            if (!conv.campaignId) return false;
+          } else {
+            // Filter by specific campaign
+            if (conv.campaignId !== campaignFilter) return false;
+          }
+        }
+
         // Type filter - also check subject for keywords
         if (typeFilter !== 'all') {
           const subjectLower = conv.subject.toLowerCase();
@@ -311,6 +369,7 @@ export default function InboxPage() {
             conv.email.toLowerCase().includes(query) ||
             conv.subject.toLowerCase().includes(query) ||
             conv.feedbackMessage?.toLowerCase().includes(query) ||
+            conv.campaignName?.toLowerCase().includes(query) ||
             conv.messages.some((m) =>
               m.body_text?.toLowerCase().includes(query),
             )
@@ -527,18 +586,39 @@ export default function InboxPage() {
               className="h-8 pl-9 text-sm"
             />
           </div>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="All types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Messages</SelectItem>
-              <SelectItem value="general">General Feedback</SelectItem>
-              <SelectItem value="bug">Bug Reports</SelectItem>
-              <SelectItem value="feature">Feature Requests</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="h-8 flex-1 text-sm">
+                <SelectValue placeholder="All types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="general">General</SelectItem>
+                <SelectItem value="bug">Bug Reports</SelectItem>
+                <SelectItem value="feature">Feature Requests</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={campaignFilter} onValueChange={setCampaignFilter}>
+              <SelectTrigger className="h-8 flex-1 text-sm">
+                <SelectValue placeholder="All campaigns" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="campaigns">
+                  <div className="flex items-center gap-1">
+                    <Megaphone className="h-3 w-3" />
+                    All Campaigns
+                  </div>
+                </SelectItem>
+                {campaigns.map((campaign) => (
+                  <SelectItem key={campaign.id} value={campaign.id}>
+                    {campaign.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <ScrollArea className="min-h-0 flex-1">
@@ -591,7 +671,16 @@ export default function InboxPage() {
                         <p className="truncate text-xs text-muted-foreground">
                           {conv.email}
                         </p>
-                        <div className="mt-1 flex items-center gap-2">
+                        <div className="mt-1 flex flex-wrap items-center gap-1">
+                          {conv.campaignId && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-purple-100 px-1.5 py-0 text-xs text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+                            >
+                              <Megaphone className="mr-1 h-3 w-3" />
+                              {conv.campaignName || 'Campaign'}
+                            </Badge>
+                          )}
                           {typeConfig && TypeIcon && (
                             <Badge
                               variant="secondary"
@@ -663,17 +752,29 @@ export default function InboxPage() {
                   </p>
                 </div>
               </div>
-              {currentConversation.feedbackType && (
-                <Badge
-                  variant="secondary"
-                  className={
-                    feedbackTypeConfig[currentConversation.feedbackType]?.color
-                  }
-                >
-                  {feedbackTypeConfig[currentConversation.feedbackType]
-                    ?.label || 'Other'}
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {currentConversation.campaignId && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+                  >
+                    <Megaphone className="mr-1 h-3 w-3" />
+                    {currentConversation.campaignName || 'Campaign'}
+                  </Badge>
+                )}
+                {currentConversation.feedbackType && (
+                  <Badge
+                    variant="secondary"
+                    className={
+                      feedbackTypeConfig[currentConversation.feedbackType]
+                        ?.color
+                    }
+                  >
+                    {feedbackTypeConfig[currentConversation.feedbackType]
+                      ?.label || 'Other'}
+                  </Badge>
+                )}
+              </div>
             </>
           }
         />

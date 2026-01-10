@@ -18,7 +18,10 @@ import {
   Pencil,
   Check,
   X,
+  MessageCircle,
+  ExternalLink,
 } from 'lucide-react';
+import Link from 'next/link';
 import { AddLeadsToCampaignModal } from './add-leads-to-campaign-modal';
 import { SendCampaignModal } from './send-campaign-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +48,18 @@ interface CampaignLeadWithLeadData {
     email: string;
     created_at: string;
   } | null;
+}
+
+// Email thread type for replies
+interface CampaignEmailThread {
+  id: string;
+  from_email: string;
+  from_name: string | null;
+  subject: string | null;
+  body_text: string | null;
+  direction: 'inbound' | 'outbound';
+  is_read: boolean;
+  created_at: string;
 }
 
 export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
@@ -75,6 +90,24 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
 
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Fetch email replies for this campaign
+  const { data: campaignReplies = [], isLoading: isLoadingReplies } = useQuery({
+    queryKey: ['campaign-replies', campaign.id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from('email_threads')
+        .select(
+          'id, from_email, from_name, subject, body_text, direction, is_read, created_at',
+        )
+        .eq('campaign_id', campaign.id)
+        .eq('direction', 'inbound')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as CampaignEmailThread[];
     },
   });
 
@@ -249,6 +282,14 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
               {campaignLeads?.length || 0}
             </Badge>
           </TabsTrigger>
+          <TabsTrigger value="replies">
+            Replies{' '}
+            {campaignReplies.length > 0 && (
+              <Badge variant="default" className="ml-2 bg-green-500">
+                {campaignReplies.length}
+              </Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="details" className="space-y-4">
@@ -371,7 +412,7 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                 <Card>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium">
@@ -416,6 +457,27 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
                     <div className="flex items-center gap-2">
                       <MousePointer className="h-4 w-4 text-blue-500" />
                       <p className="text-2xl font-bold">{clickedLeads}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card
+                  className={
+                    campaignReplies.length > 0
+                      ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20'
+                      : ''
+                  }
+                >
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Replies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-green-500" />
+                      <p className="text-2xl font-bold">
+                        {campaignReplies.length}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -573,6 +635,80 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
                 ))}
               </div>
             </ScrollArea>
+          )}
+        </TabsContent>
+
+        <TabsContent value="replies">
+          {isLoadingReplies ? (
+            <div className="flex h-[200px] items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : campaignReplies.length === 0 ? (
+            <div className="rounded-md border py-8 text-center text-muted-foreground">
+              <MessageCircle className="mx-auto mb-2 h-12 w-12" />
+              <p>No replies received yet</p>
+              <p className="mt-1 text-sm">
+                Replies from campaign recipients will appear here
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {campaignReplies.length}{' '}
+                  {campaignReplies.length === 1 ? 'reply' : 'replies'} received
+                </p>
+                <Link
+                  href={`/admin/inbox?campaign=${campaign.id}`}
+                  className="flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  View in Inbox
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+              <ScrollArea className="h-[350px]">
+                <div className="space-y-3">
+                  {campaignReplies.map((reply) => (
+                    <div
+                      key={reply.id}
+                      className={`rounded-md border p-4 ${!reply.is_read ? 'border-l-4 border-l-green-500 bg-green-50 dark:bg-green-950/20' : ''}`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium">
+                            {reply.from_name || reply.from_email.split('@')[0]}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {reply.from_email}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!reply.is_read && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-green-100 text-green-800"
+                            >
+                              New
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(reply.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      {reply.subject && (
+                        <p className="mt-1 text-sm font-medium">
+                          {reply.subject}
+                        </p>
+                      )}
+                      <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
+                        {reply.body_text || '(No content)'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
           )}
         </TabsContent>
       </Tabs>
