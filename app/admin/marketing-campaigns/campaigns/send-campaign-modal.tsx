@@ -53,6 +53,7 @@ export function SendCampaignModal({
           testEmail,
           emailSubject: campaign.email_subject,
           emailTemplate: campaign.email_template,
+          emailContent: campaign.email_content,
         }),
       });
 
@@ -106,11 +107,18 @@ export function SendCampaignModal({
             <p className="mb-1 text-sm font-medium">
               Subject: {campaign.email_subject}
             </p>
-            <div className="mt-2 max-h-[200px] overflow-y-auto rounded-md bg-background p-3 text-sm">
-              <pre className="whitespace-pre-wrap font-sans">
-                {campaign.email_template}
-              </pre>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              {campaign.email_template}
+            </p>
+            {campaign.email_template === 'markdown' &&
+              campaign.email_content && (
+                <div className="mt-2 max-h-[150px] overflow-y-auto rounded-md bg-background p-3 text-sm">
+                  <pre className="whitespace-pre-wrap font-sans text-xs">
+                    {campaign.email_content.substring(0, 300)}
+                    {campaign.email_content.length > 300 && '...'}
+                  </pre>
+                </div>
+              )}
           </div>
 
           <div className="space-y-2">

@@ -7,6 +7,80 @@ import { Campaign } from '@/types/campaigns';
 
 import { EMAIL_TEMPLATES, TemplateType } from '@/config/email_campaigns';
 
+// Simple markdown to HTML converter
+function markdownToHtml(markdown: string): string {
+  let html = markdown
+    // Escape HTML
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Headers
+    .replace(
+      /^### (.*$)/gm,
+      '<h3 style="font-size: 18px; font-weight: 600; margin-top: 16px; margin-bottom: 8px;">$1</h3>',
+    )
+    .replace(
+      /^## (.*$)/gm,
+      '<h2 style="font-size: 20px; font-weight: 600; margin-top: 16px; margin-bottom: 8px;">$1</h2>',
+    )
+    .replace(
+      /^# (.*$)/gm,
+      '<h1 style="font-size: 24px; font-weight: 700; margin-top: 16px; margin-bottom: 8px;">$1</h1>',
+    )
+    // Bold and italic
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Links
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" style="color: #f59e0b; text-decoration: underline;">$1</a>',
+    )
+    // Unordered lists
+    .replace(/^\s*[-*]\s+(.*$)/gm, '<li style="margin-left: 16px;">$1</li>')
+    // Line breaks (double newline = paragraph)
+    .replace(/\n\n/g, '</p><p style="margin: 8px 0;">')
+    // Single line breaks
+    .replace(/\n/g, '<br />');
+
+  // Wrap in paragraph tags
+  html = '<p style="margin: 8px 0;">' + html + '</p>';
+
+  // Clean up empty paragraphs
+  html = html.replace(/<p style="margin: 8px 0;"><\/p>/g, '');
+
+  // Wrap consecutive list items in ul
+  html = html.replace(
+    /(<li[^>]*>.*?<\/li>)+/g,
+    '<ul style="list-style-type: disc; margin: 8px 0; padding-left: 20px;">$&</ul>',
+  );
+
+  return html;
+}
+
+// Generate HTML email wrapper
+function generateEmailHtml(content: string, recipientName: string): string {
+  // Replace {{name}} with recipient name
+  const personalizedContent = content.replace(/\{\{name\}\}/g, recipientName);
+  const htmlContent = markdownToHtml(personalizedContent);
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  ${htmlContent}
+  <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+  <p style="font-size: 12px; color: #666;">
+    Sent by <a href="https://itracksy.com" style="color: #f59e0b;">iTracksy</a>
+  </p>
+</body>
+</html>`;
+}
+
 type CampaignLeadWithLead = {
   id: string;
   campaign_id: string;
@@ -151,15 +225,6 @@ async function processCampaignsInBackground(
           continue;
         }
 
-        // Validate email template exists
-        const emailTemplate = campaign.email_template as TemplateType;
-        if (!emailTemplate || !EMAIL_TEMPLATES[emailTemplate]) {
-          console.error(
-            `Invalid email template "${emailTemplate}" for campaign ${campaign.id}`,
-          );
-          continue;
-        }
-
         // Validate email address
         if (!campaignLead.lead.email) {
           console.error(
@@ -168,33 +233,69 @@ async function processCampaignsInBackground(
           continue;
         }
 
-        // Get the email template component
-        const EmailTemplate = EMAIL_TEMPLATES[emailTemplate];
-        if (typeof EmailTemplate !== 'function') {
-          console.error(
-            `Email template "${emailTemplate}" is not a valid function`,
-          );
-          continue;
-        }
+        let emailData;
+        let emailError;
+        const recipientName = campaignLead.lead.name || 'there';
+        const recipientEmail = isDevelopment
+          ? DEV_EMAIL
+          : campaignLead.lead.email;
+        const emailSubject = isDevelopment
+          ? `[TEST] ${campaign.email_subject}`
+          : campaign.email_subject;
 
-        // Send email using Resend
-        const emailElement = EmailTemplate({
-          name: campaignLead.lead.name || 'there',
-        });
-        const { data: emailData, error: emailError } = await resend.emails.send(
-          {
+        // Handle markdown template type
+        if (campaign.email_template === 'markdown' && campaign.email_content) {
+          const htmlEmail = generateEmailHtml(
+            campaign.email_content,
+            recipientName,
+          );
+
+          const result = await resend.emails.send({
             from: 'iTracksy <noreply@itracksy.com>',
-            to: isDevelopment ? DEV_EMAIL : campaignLead.lead.email,
-            subject: isDevelopment
-              ? `[TEST] ${campaign.email_subject}`
-              : campaign.email_subject,
+            to: recipientEmail,
+            subject: emailSubject,
+            html: htmlEmail,
+            tags: [
+              { name: 'lead_id', value: String(campaignLead.lead.id) },
+              { name: 'campaign_id', value: String(campaign.id) },
+            ],
+          });
+          emailData = result.data;
+          emailError = result.error;
+        } else {
+          // Validate predefined email template exists
+          const emailTemplate = campaign.email_template as TemplateType;
+          if (!emailTemplate || !EMAIL_TEMPLATES[emailTemplate]) {
+            console.error(
+              `Invalid email template "${emailTemplate}" for campaign ${campaign.id}`,
+            );
+            continue;
+          }
+
+          // Get the email template component
+          const EmailTemplate = EMAIL_TEMPLATES[emailTemplate];
+          if (typeof EmailTemplate !== 'function') {
+            console.error(
+              `Email template "${emailTemplate}" is not a valid function`,
+            );
+            continue;
+          }
+
+          // Send email using Resend with React template
+          const emailElement = EmailTemplate({ name: recipientName });
+          const result = await resend.emails.send({
+            from: 'iTracksy <noreply@itracksy.com>',
+            to: recipientEmail,
+            subject: emailSubject,
             react: emailElement as React.ReactElement,
             tags: [
               { name: 'lead_id', value: String(campaignLead.lead.id) },
               { name: 'campaign_id', value: String(campaign.id) },
             ],
-          },
-        );
+          });
+          emailData = result.data;
+          emailError = result.error;
+        }
 
         if (emailError) {
           console.error('Error sending email:', emailError);
