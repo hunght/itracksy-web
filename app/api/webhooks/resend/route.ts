@@ -82,10 +82,10 @@ export async function POST(request: NextRequest) {
           .eq('status', 'active')
           .single()) as unknown as { data: { id: string } | null; error: Error | null };
       if (activeCampaignError || !activeCampaigns) {
-        // Log the error and return a 404 response
-        // throw error if no active campaign is found
-        console.error('Error fetching active campaign:', activeCampaignError);
-        return NextResponse.json({ error: tagsObject }, { status: 404 });
+        // No active campaign - this might be a non-campaign email (e.g., support reply)
+        // Just log and return success
+        console.log('No active campaign found, skipping campaign tracking for:', recipientEmail);
+        return NextResponse.json({ success: true, message: 'No active campaign' });
       }
 
       campaignId = activeCampaigns.id;
