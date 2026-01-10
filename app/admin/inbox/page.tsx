@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ChatBox, ChatMessage } from '@/components/chat-box';
 import {
-  Send,
   RefreshCw,
   User,
-  Loader2,
   Inbox,
   Circle,
 } from 'lucide-react';
@@ -56,22 +54,9 @@ const formatTime = (dateString: string) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const formatMessageTime = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
 export default function InboxPage() {
   const supabase = useSupabaseBrowser();
-  const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
-  const [replyMessage, setReplyMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const {
     data: emails = [],
@@ -125,11 +110,6 @@ export default function InboxPage() {
 
   const currentConversation = conversations.find((c) => c.email === selectedConversation);
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [currentConversation?.messages]);
-
   // Mark messages as read when conversation is selected
   const markAsRead = useMutation({
     mutationFn: async (emailIds: string[]) => {
@@ -157,7 +137,7 @@ export default function InboxPage() {
 
   // Send reply
   const sendReply = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (message: string) => {
       if (!currentConversation) throw new Error('No conversation selected');
 
       const lastInbound = [...currentConversation.messages]
@@ -171,7 +151,7 @@ export default function InboxPage() {
           feedbackId: lastInbound?.feedback_id || 'direct-email',
           to: currentConversation.email,
           subject: `Re: ${lastInbound?.subject || 'Your message'}`,
-          message: replyMessage,
+          message,
           userName: currentConversation.name || currentConversation.email,
           originalMessage: '',
           feedbackType: 'email',
@@ -188,7 +168,6 @@ export default function InboxPage() {
     },
     onSuccess: () => {
       toast({ title: 'Message sent' });
-      setReplyMessage('');
       refetch();
     },
     onError: (error) => {
@@ -200,22 +179,28 @@ export default function InboxPage() {
     },
   });
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (replyMessage.trim()) {
-        sendReply.mutate();
-      }
-    }
+  const handleSendMessage = (message: string) => {
+    sendReply.mutate(message);
   };
+
+  // Convert messages to ChatMessage format
+  const chatMessages: ChatMessage[] = currentConversation
+    ? currentConversation.messages.map((m) => ({
+        id: m.id,
+        content: m.body_text || '',
+        timestamp: m.created_at,
+        direction: m.direction,
+        subject: m.subject || undefined,
+      }))
+    : [];
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
 
   return (
-    <div className="flex h-[calc(100vh-12rem)] overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+    <div className="flex h-full overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
       {/* Conversations List */}
-      <div className="w-80 flex-shrink-0 border-r">
-        <div className="flex items-center justify-between border-b p-4">
+      <div className="flex w-80 flex-shrink-0 flex-col border-r">
+        <div className="flex flex-shrink-0 items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <Inbox className="h-5 w-5" />
             <span className="font-semibold">Inbox</span>
@@ -230,7 +215,7 @@ export default function InboxPage() {
           </Button>
         </div>
 
-        <ScrollArea className="h-[calc(100%-4rem)]">
+        <ScrollArea className="min-h-0 flex-1">
           {isLoading ? (
             <div className="p-4 text-center text-muted-foreground">Loading...</div>
           ) : conversations.length === 0 ? (
@@ -284,11 +269,14 @@ export default function InboxPage() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex flex-1 flex-col">
-        {currentConversation ? (
-          <>
-            {/* Chat Header */}
-            <div className="flex items-center gap-3 border-b p-4">
+      {currentConversation ? (
+        <ChatBox
+          messages={chatMessages}
+          onSendMessage={handleSendMessage}
+          isSending={sendReply.isPending}
+          showAttachments={false}
+          headerContent={
+            <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                 <User className="h-5 w-5 text-primary" />
               </div>
@@ -299,86 +287,15 @@ export default function InboxPage() {
                 <p className="text-sm text-muted-foreground">{currentConversation.email}</p>
               </div>
             </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                {currentConversation.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      'flex',
-                      message.direction === 'outbound' ? 'justify-end' : 'justify-start'
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'max-w-[70%] rounded-2xl px-4 py-2',
-                        message.direction === 'outbound'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-gray-100 dark:bg-gray-800'
-                      )}
-                    >
-                      {message.subject && (
-                        <p className={cn(
-                          'mb-1 text-xs font-medium',
-                          message.direction === 'outbound'
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground'
-                        )}>
-                          {message.subject}
-                        </p>
-                      )}
-                      <p className="whitespace-pre-wrap text-sm">{message.body_text}</p>
-                      <p
-                        className={cn(
-                          'mt-1 text-right text-xs',
-                          message.direction === 'outbound'
-                            ? 'text-primary-foreground/70'
-                            : 'text-muted-foreground'
-                        )}
-                      >
-                        {formatMessageTime(message.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Reply Input */}
-            <div className="border-t p-4">
-              <div className="flex gap-2">
-                <Textarea
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
-                  className="min-h-[80px] resize-none"
-                />
-                <Button
-                  onClick={() => sendReply.mutate()}
-                  disabled={sendReply.isPending || !replyMessage.trim()}
-                  className="h-auto"
-                >
-                  {sendReply.isPending ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Send className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
-            <Inbox className="mb-4 h-16 w-16" />
-            <p className="text-lg">Select a conversation</p>
-            <p className="text-sm">Choose a conversation from the left to start messaging</p>
-          </div>
-        )}
-      </div>
+          }
+        />
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center text-muted-foreground">
+          <Inbox className="mb-4 h-16 w-16" />
+          <p className="text-lg">Select a conversation</p>
+          <p className="text-sm">Choose a conversation from the left to start messaging</p>
+        </div>
+      )}
     </div>
   );
 }
