@@ -64,6 +64,11 @@ function markdownToHtml(markdown: string): string {
     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Images (must come before links)
+    .replace(
+      /!\[([^\]]*)\]\(([^)]+)\)/g,
+      '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg my-4" />',
+    )
     // Links
     .replace(
       /\[([^\]]+)\]\(([^)]+)\)/g,
