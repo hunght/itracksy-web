@@ -27,6 +27,7 @@ import { SendCampaignModal } from './send-campaign-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CampaignDetailsProps {
   campaign: Campaign;
@@ -66,8 +67,12 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
   const [activeTab, setActiveTab] = useState('details');
   const [editingSubject, setEditingSubject] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(false);
+  const [editingContent, setEditingContent] = useState(false);
   const [subjectValue, setSubjectValue] = useState(campaign.email_subject);
   const [templateValue, setTemplateValue] = useState(campaign.email_template);
+  const [contentValue, setContentValue] = useState(
+    campaign.email_content || '',
+  );
   const queryClient = useQueryClient();
   const supabase = useSupabaseBrowser();
 
@@ -208,6 +213,18 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
   const handleCancelTemplateEdit = () => {
     setTemplateValue(campaign.email_template);
     setEditingTemplate(false);
+  };
+
+  const handleSaveContent = () => {
+    if (contentValue !== campaign.email_content) {
+      updateCampaignField({ field: 'email_content', value: contentValue });
+    }
+    setEditingContent(false);
+  };
+
+  const handleCancelContentEdit = () => {
+    setContentValue(campaign.email_content || '');
+    setEditingContent(false);
   };
 
   // Calculate campaign statistics
@@ -403,6 +420,71 @@ export function CampaignDetails({ campaign, onUpdate }: CampaignDetailsProps) {
               )}
             </div>
           </div>
+
+          {/* Email Content (Markdown) - Only show for markdown template */}
+          {campaign.email_template === 'markdown' && (
+            <div>
+              <div className="mb-1 flex items-center justify-between">
+                <h4 className="text-sm font-medium">
+                  Email Content (Markdown)
+                </h4>
+                {!editingContent && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditingContent(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div className="rounded-md border p-4">
+                {editingContent ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={contentValue}
+                      onChange={(e) => setContentValue(e.target.value)}
+                      className="min-h-[300px] font-mono text-sm"
+                      placeholder="Write your email content in markdown..."
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCancelContentEdit}
+                        disabled={isUpdatingField}
+                      >
+                        <X className="mr-1 h-4 w-4" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveContent}
+                        disabled={isUpdatingField}
+                      >
+                        {isUpdatingField ? (
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="mr-1 h-4 w-4" />
+                        )}
+                        Save
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Supports: **bold**, *italic*, [links](url),
+                      ![images](url), ## headers, - lists
+                    </p>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[200px]">
+                    <pre className="whitespace-pre-wrap font-mono text-sm">
+                      {campaign.email_content || '(No content)'}
+                    </pre>
+                  </ScrollArea>
+                )}
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="stats">
