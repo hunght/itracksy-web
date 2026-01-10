@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
 };
 
-const POSTS_PER_PAGE = 5;
+const POSTS_PER_PAGE = 50; // Show all posts on one page
 
 interface BlogPageProps {
   searchParams: Promise<{
