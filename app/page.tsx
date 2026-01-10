@@ -17,9 +17,6 @@ import { DownloadNowButton } from '@/components/download-now-button';
 import { PlatformDownloads } from '@/components/platform-downloads';
 
 import { siteConfig } from '@/config/site';
-import { appScreenshots } from '@/config/screenshots';
-import { CarouselItem } from '@/components/ui/carousel';
-import { AutoPlayCarousel } from '@/components/AutoPlayCarousel';
 import { GitHubButton } from '@/components/github-button';
 import { EmailSubscriptionForm } from '@/components/email-subscription-form';
 
@@ -147,77 +144,79 @@ export default function Home() {
         <SiteHeader />
         <main className="flex-1">
           <section
-            className="hero-section py-16"
+            className="hero-section py-12 md:py-16"
             aria-label="Main hero section"
           >
             <div className="container mx-auto px-4">
-              <div className="flex flex-col items-center gap-8 md:flex-row md:justify-between">
-                {/* Left side - Text content */}
-                <div className="flex flex-col md:w-1/2">
-                  <h1
-                    className="mb-6 text-4xl font-bold md:text-5xl"
-                    itemProp="headline"
-                  >
-                    <span className="text-slate-700 dark:text-slate-200">
-                      The{' '}
-                    </span>
-                    <span className="text-amber-500">Only Time Tracker</span>
-                    <br />
-                    <span className="text-slate-700 dark:text-slate-200">
-                      You Need
-                    </span>
-                  </h1>
-                  <p
-                    className="mb-8 text-lg text-muted-foreground"
-                    itemProp="description"
-                  >
-                    Level up your personal or team&apos;s productivity with
-                    detailed time tracking. Insights and info on your
-                    performance. No credit card required!
-                  </p>
-                  <div className="mb-8">
-                    <DownloadButton />
-                  </div>
+              {/* Centered headline */}
+              <div className="mx-auto max-w-4xl text-center">
+                <h1
+                  className="mb-4 text-4xl font-bold md:text-6xl"
+                  itemProp="headline"
+                >
+                  <span className="text-slate-700 dark:text-slate-200">
+                    Track your time,{' '}
+                  </span>
+                  <br className="hidden sm:block" />
+                  <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                    Boost your productivity
+                  </span>
+                </h1>
+                <p
+                  className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
+                  itemProp="description"
+                >
+                  Automatic time tracking with focus sessions and detailed
+                  insights. Free, open-source, and privacy-focused.
+                </p>
+              </div>
 
-                  <PlatformDownloads />
+              {/* CTA and platform downloads - above video */}
+              <div className="mx-auto mb-10 max-w-2xl text-center">
+                <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+                  <DownloadButton />
+                  <GitHubButton
+                    href="https://github.com/itracksy/itracksy"
+                    type="star"
+                    className="rounded-full border border-slate-300 bg-white px-6 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  >
+                    Star on GitHub
+                  </GitHubButton>
                 </div>
+                <PlatformDownloads />
+              </div>
 
-                {/* Right side - App screenshot */}
-                <div className="mt-8 w-full md:mt-0 md:w-1/2">
-                  <div className="relative">
-                    <div className="absolute -left-2 -right-2 -top-2 bottom-4 z-0 rounded-full bg-amber-500 md:-left-4 md:-right-4 md:-top-4"></div>
+              {/* Video showcase */}
+              <div className="mx-auto max-w-5xl">
+                <div className="relative">
+                  {/* Glow effect behind video */}
+                  <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 blur-2xl"></div>
 
-                    <div className="relative z-10">
-                      <div className="relative overflow-hidden rounded-lg border border-slate-200 shadow-xl">
-                        <AutoPlayCarousel
-                          className="overflow-hidden rounded-lg"
-                          interval={5000}
-                          opts={{
-                            align: 'center',
-                            containScroll: 'trimSnaps',
-                          }}
-                        >
-                          {appScreenshots.map((image, index) => (
-                            <CarouselItem
-                              key={index}
-                              className="xs:basis-full sm:basis-full md:basis-full"
-                            >
-                              <div className="p-1">
-                                <Image
-                                  src={image.src}
-                                  alt={image.alt}
-                                  width={800}
-                                  height={500}
-                                  priority={index === 0}
-                                  className="w-full rounded-md"
-                                  sizes="(max-width: 768px) 100vw, 50vw"
-                                />
-                              </div>
-                            </CarouselItem>
-                          ))}
-                        </AutoPlayCarousel>
+                  {/* macOS-style window frame */}
+                  <div className="relative overflow-hidden rounded-xl border border-slate-200/50 bg-slate-900 shadow-2xl dark:border-slate-700/50">
+                    {/* Window title bar */}
+                    <div className="flex h-10 items-center gap-2 border-b border-slate-700 bg-slate-800 px-4">
+                      <div className="flex gap-1.5">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
                       </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-xs text-slate-400">iTracksy</span>
+                      </div>
+                      <div className="w-12"></div>
                     </div>
+
+                    {/* Video content */}
+                    <video
+                      src="/screenshots/focus-demo.mp4"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full"
+                      style={{ aspectRatio: '800/582' }}
+                    />
                   </div>
                 </div>
               </div>

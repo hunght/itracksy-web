@@ -20,7 +20,7 @@ interface DownloadNowButtonProps {
 
 export function DownloadNowButton({
   className,
-  children = 'Grab it now',
+  children = 'Download',
   variant = 'default',
   size = 'sm',
 }: DownloadNowButtonProps) {

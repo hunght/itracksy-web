@@ -2,32 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  FaWindows,
-  FaApple,
-  FaLinux,
-  FaDownload,
-  FaMobileAlt,
-  FaAndroid,
-} from 'react-icons/fa';
+import { FaWindows, FaApple, FaLinux, FaDownload } from 'react-icons/fa';
 import Link from 'next/link';
 import { getPlatformDownloadUrl } from '@/utils/handleDownload';
 import { useAppVersion } from '@/hooks/use-app-version';
 import Image from 'next/image';
-import { useSupabaseBrowser } from '@/lib/supabase/client';
 
 const DownloadPage = () => {
   const { links, loading, version } = useAppVersion();
-  const supabase = useSupabaseBrowser();
   const [os, setOs] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [downloadStarted, setDownloadStarted] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [downloadUrl, setDownloadUrl] = useState('');
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-  const [subscribeError, setSubscribeError] = useState('');
-
   useEffect(() => {
     // Detect user's operating system and if it's mobile
     if (typeof window !== 'undefined') {
@@ -37,15 +24,8 @@ const DownloadPage = () => {
 
       setIsMobile(mobileRegex.test(userAgent));
 
-      // Check for mobile platforms first, then desktop platforms
-      if (userAgent.indexOf('android') !== -1) {
-        setOs('android');
-      } else if (
-        userAgent.indexOf('iphone') !== -1 ||
-        userAgent.indexOf('ipad') !== -1
-      ) {
-        setOs('ios');
-      } else if (userAgent.indexOf('windows') !== -1) {
+      // Detect desktop platforms
+      if (userAgent.indexOf('windows') !== -1) {
         setOs('windows');
       } else if (userAgent.indexOf('mac') !== -1) {
         setOs('mac');
@@ -100,10 +80,6 @@ const DownloadPage = () => {
         return <FaApple className="text-4xl" />;
       case 'linux':
         return <FaLinux className="text-4xl" />;
-      case 'android':
-        return <FaAndroid className="text-4xl" />;
-      case 'ios':
-        return <FaMobileAlt className="text-4xl" />;
       default:
         return <FaDownload className="text-4xl" />;
     }
@@ -117,10 +93,6 @@ const DownloadPage = () => {
         return 'macOS';
       case 'linux':
         return 'Linux';
-      case 'android':
-        return 'Android';
-      case 'ios':
-        return 'iOS';
       default:
         return 'your device';
     }
@@ -161,47 +133,6 @@ const DownloadPage = () => {
     setDownloadStarted(true);
   };
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Basic email validation
-    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setSubscribeError('Please enter a valid email address');
-      return;
-    }
-
-    try {
-      // Save the email to the leads table
-      const { error } = await supabase.from('leads').insert({
-        name: email.split('@')[0], // Extract username part of email as name
-        email: email,
-        phone: 'Not provided', // Default value
-        message: `Mobile app interest (${os} user)`,
-        submission_time: new Date().toISOString(),
-        group: 'mobile-subscribers', // Group for these specific leads
-      });
-
-      if (error) {
-        console.error('Error saving subscription:', error);
-        // If it's a duplicate email error, still show success to the user
-        if (error.code === '23505') {
-          // Unique constraint violation code
-          setSubscribed(true);
-          setSubscribeError('');
-        } else {
-          setSubscribeError('Failed to subscribe. Please try again later.');
-        }
-      } else {
-        // Set state to show success message
-        setSubscribed(true);
-        setSubscribeError('');
-      }
-    } catch (error) {
-      console.error('Subscription error:', error);
-      setSubscribeError('Failed to subscribe. Please try again later.');
-    }
-  };
-
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-50 to-white p-4">
       <motion.div
@@ -237,39 +168,25 @@ const DownloadPage = () => {
         ) : isMobile ? (
           <div className="mb-8 rounded-xl bg-purple-50 p-6 text-center">
             <div className="mb-4 flex items-center justify-center">
-              {getOsIcon()}
-              <span className="ml-3 text-xl font-medium">
-                We detected you&apos;re using {getOsName()}
+              <FaDownload className="text-4xl" />
+              <span className="ml-3 text-xl font-medium">Desktop App Only</span>
+            </div>
+            <p className="mb-4 text-gray-600">
+              iTracksy is currently available for desktop platforms only. Please
+              visit this page from your Windows, macOS, or Linux computer to
+              download.
+            </p>
+            <div className="flex justify-center gap-4 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <FaWindows /> Windows
+              </span>
+              <span className="flex items-center gap-1">
+                <FaApple /> macOS
+              </span>
+              <span className="flex items-center gap-1">
+                <FaLinux /> Linux
               </span>
             </div>
-            {subscribed ? (
-              <p className="text-green-600">
-                Thank you for subscribing! We&apos;ll notify you when the mobile
-                version is available.
-              </p>
-            ) : (
-              <form onSubmit={handleSubscribe} className="space-y-4">
-                <p className="text-gray-600">
-                  Mobile versions are coming soon! Subscribe to get notified:
-                </p>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full rounded-lg border border-gray-300 p-2"
-                />
-                {subscribeError && (
-                  <p className="text-sm text-red-600">{subscribeError}</p>
-                )}
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition duration-300 hover:bg-purple-700"
-                >
-                  Subscribe
-                </button>
-              </form>
-            )}
           </div>
         ) : (
           <>

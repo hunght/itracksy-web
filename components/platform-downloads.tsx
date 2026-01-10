@@ -6,9 +6,11 @@ export function PlatformDownloads() {
   const { links } = useAppVersion();
 
   return (
-    <div className="flex flex-col">
-      <p className="mb-2 text-sm text-muted-foreground">Available on</p>
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-col items-center">
+      <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+        <span className="text-sm text-muted-foreground">Available on</span>
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-3">
         <a
           href={links.windows}
           target="_blank"
@@ -53,70 +55,8 @@ export function PlatformDownloads() {
             Linux
           </span>
         </a>
-
-        <div
-          className="flex items-center space-x-1 rounded-md bg-green-50 px-3 py-1 dark:bg-green-900/30"
-          aria-label="Coming soon for Android"
-        >
-          <div className="flex h-8 w-8 items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-green-600 dark:text-green-400"
-            >
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-              <circle cx="12" cy="18" r="1" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-green-700 dark:text-green-400">
-              Android
-            </span>
-            <span className="text-xs text-green-600 dark:text-green-500">
-              Coming soon
-            </span>
-          </div>
-        </div>
-
-        <div
-          className="flex items-center space-x-1 rounded-md bg-indigo-50 px-3 py-1 dark:bg-indigo-900/30"
-          aria-label="Coming soon for iOS"
-        >
-          <div className="flex h-8 w-8 items-center justify-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-indigo-600 dark:text-indigo-400"
-            >
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-              <path d="M12 18h.01" />
-            </svg>
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-indigo-700 dark:text-indigo-400">
-              iOS
-            </span>
-            <span className="text-xs text-indigo-600 dark:text-indigo-500">
-              Coming soon
-            </span>
-          </div>
-        </div>
       </div>
-      <div className="mt-4 flex flex-col space-y-2">
+      <div className="mt-4 flex flex-col items-center space-y-2">
         <a
           href={links.releases}
           target="_blank"
