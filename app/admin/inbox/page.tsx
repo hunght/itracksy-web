@@ -4,13 +4,54 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSupabaseBrowser } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
 import { ChatBox, ChatMessage } from '@/components/chat-box';
-import { RefreshCw, User, Inbox, Circle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  RefreshCw,
+  User,
+  Inbox,
+  Circle,
+  Plus,
+  Search,
+  Bug,
+  Lightbulb,
+  MessageSquare,
+  HelpCircle,
+  Loader2,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Email = {
+type Feedback = {
+  id: string;
+  created_at: string;
+  name: string;
+  email: string;
+  feedback_type: string;
+  message: string;
+  replied_at?: string | null;
+};
+
+type EmailThread = {
   id: string;
   message_id: string;
   from_email: string;
@@ -25,14 +66,58 @@ type Email = {
   created_at: string;
 };
 
-type Conversation = {
+type UnifiedConversation = {
+  id: string; // unique key: `${email}-${normalizedSubject}`
   email: string;
   name: string | null;
-  lastMessage: string;
-  lastDate: string;
+  subject: string;
+  feedbackId: string | null;
+  feedbackType: string | null;
+  feedbackMessage: string | null;
+  feedbackCreatedAt: string | null;
+  messages: EmailThread[];
+  lastActivity: string;
   unreadCount: number;
-  messages: Email[];
+  hasUnreplied: boolean;
 };
+
+const feedbackTypeConfig: Record<
+  string,
+  { icon: React.ElementType; color: string; label: string }
+> = {
+  general: {
+    icon: MessageSquare,
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    label: 'General',
+  },
+  bug: {
+    icon: Bug,
+    color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+    label: 'Bug',
+  },
+  feature: {
+    icon: Lightbulb,
+    color:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+    label: 'Feature',
+  },
+  other: {
+    icon: HelpCircle,
+    color: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+    label: 'Other',
+  },
+};
+
+// Normalize subject by removing Re:, Fwd:, FW: prefixes
+function normalizeSubject(subject: string | null): string {
+  if (!subject) return '(no subject)';
+  return subject.replace(/^(re|fwd|fw):\s*/gi, '').trim() || '(no subject)';
+}
+
+// Create unique conversation key
+function getConversationKey(email: string, subject: string): string {
+  return `${email.toLowerCase()}-${normalizeSubject(subject).toLowerCase()}`;
+}
 
 const formatTime = (dateString: string) => {
   const date = new Date(dateString);
@@ -56,72 +141,192 @@ const formatTime = (dateString: string) => {
 
 export default function InboxPage() {
   const supabase = useSupabaseBrowser();
-  const [selectedConversation, setSelectedConversation] = useState<
+  const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newSubject, setNewSubject] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const [isSendingNew, setIsSendingNew] = useState(false);
 
+  // Fetch feedback
   const {
-    data: emails = [],
-    isLoading,
-    refetch,
-  } = useQuery<Email[]>({
-    queryKey: ['inbox-emails'],
+    data: feedbackList = [],
+    isLoading: loadingFeedback,
+    refetch: refetchFeedback,
+  } = useQuery<Feedback[]>({
+    queryKey: ['unified-inbox-feedback'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data as Feedback[];
+    },
+  });
+
+  // Fetch all email threads
+  const {
+    data: emailThreads = [],
+    isLoading: loadingEmails,
+    refetch: refetchEmails,
+  } = useQuery<EmailThread[]>({
+    queryKey: ['unified-inbox-emails'],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('email_threads')
         .select('*')
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data as Email[];
+      return data as EmailThread[];
     },
   });
 
-  // Group emails into conversations by email address
-  const conversations: Conversation[] = (() => {
-    const grouped = new Map<string, Email[]>();
+  const isLoading = loadingFeedback || loadingEmails;
 
-    emails.forEach((email) => {
-      const key =
-        email.direction === 'inbound' ? email.from_email : email.to_email;
-      if (!grouped.has(key)) {
-        grouped.set(key, []);
-      }
-      grouped.get(key)!.push(email);
+  const refetch = () => {
+    refetchFeedback();
+    refetchEmails();
+  };
+
+  // Build unified conversations grouped by email + subject
+  const conversations: UnifiedConversation[] = (() => {
+    const conversationMap = new Map<string, UnifiedConversation>();
+
+    // First, create conversations from feedback
+    feedbackList.forEach((feedback) => {
+      if (!feedback.email) return;
+
+      // For feedback, use the feedback_type as part of the subject
+      const subject = `${feedback.feedback_type || 'general'} feedback`;
+      const key = getConversationKey(feedback.email, subject);
+
+      conversationMap.set(key, {
+        id: key,
+        email: feedback.email,
+        name: feedback.name?.replace('iTracksy:', '') || null,
+        subject: normalizeSubject(subject),
+        feedbackId: feedback.id,
+        feedbackType: feedback.feedback_type,
+        feedbackMessage: feedback.message,
+        feedbackCreatedAt: feedback.created_at,
+        messages: [],
+        lastActivity: feedback.created_at,
+        unreadCount: 0,
+        hasUnreplied: !feedback.replied_at,
+      });
     });
 
-    return Array.from(grouped.entries())
-      .map(([email, messages]) => {
-        const sortedMessages = messages.sort(
-          (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-        );
-        const lastMessage = sortedMessages[sortedMessages.length - 1];
-        const inboundMessages = messages.filter(
-          (m) => m.direction === 'inbound',
-        );
-        const name =
-          inboundMessages.find((m) => m.from_name)?.from_name || null;
-        const unreadCount = messages.filter(
-          (m) => !m.is_read && m.direction === 'inbound',
-        ).length;
+    // Then, add emails to conversations
+    emailThreads.forEach((email) => {
+      const emailAddress =
+        email.direction === 'inbound' ? email.from_email : email.to_email;
+      const subject = email.subject || '(no subject)';
+      const key = getConversationKey(emailAddress, subject);
 
-        return {
-          email,
-          name,
-          lastMessage: lastMessage.body_text || lastMessage.subject || '',
-          lastDate: lastMessage.created_at,
-          unreadCount,
-          messages: sortedMessages,
-        };
+      // If this email has a feedback_id, try to find that feedback's conversation
+      let targetKey = key;
+      if (email.feedback_id) {
+        const feedback = feedbackList.find((f) => f.id === email.feedback_id);
+        if (feedback) {
+          const feedbackSubject = `${feedback.feedback_type || 'general'} feedback`;
+          targetKey = getConversationKey(feedback.email, feedbackSubject);
+        }
+      }
+
+      if (conversationMap.has(targetKey)) {
+        // Add to existing conversation
+        const conv = conversationMap.get(targetKey)!;
+        conv.messages.push(email);
+        if (new Date(email.created_at) > new Date(conv.lastActivity)) {
+          conv.lastActivity = email.created_at;
+        }
+        if (!email.is_read && email.direction === 'inbound') {
+          conv.unreadCount++;
+        }
+      } else {
+        // Create new conversation from email
+        conversationMap.set(key, {
+          id: key,
+          email: emailAddress,
+          name:
+            email.direction === 'inbound'
+              ? email.from_name
+              : email.from_name || null,
+          subject: normalizeSubject(subject),
+          feedbackId: email.feedback_id,
+          feedbackType: null,
+          feedbackMessage: null,
+          feedbackCreatedAt: null,
+          messages: [email],
+          lastActivity: email.created_at,
+          unreadCount: !email.is_read && email.direction === 'inbound' ? 1 : 0,
+          hasUnreplied: email.direction === 'inbound',
+        });
+      }
+    });
+
+    // Sort messages within each conversation
+    conversationMap.forEach((conv) => {
+      conv.messages.sort(
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+      // Update hasUnreplied based on last message
+      if (conv.messages.length > 0) {
+        const lastMsg = conv.messages[conv.messages.length - 1];
+        conv.hasUnreplied = lastMsg.direction === 'inbound';
+      }
+    });
+
+    // Convert to array and filter
+    return Array.from(conversationMap.values())
+      .filter((conv) => {
+        // Type filter - also check subject for keywords
+        if (typeFilter !== 'all') {
+          const subjectLower = conv.subject.toLowerCase();
+          const matchesFeedbackType = conv.feedbackType === typeFilter;
+          const matchesSubjectKeyword =
+            (typeFilter === 'bug' &&
+              (subjectLower.includes('bug') ||
+                subjectLower.includes('error'))) ||
+            (typeFilter === 'feature' &&
+              (subjectLower.includes('feature') ||
+                subjectLower.includes('request'))) ||
+            (typeFilter === 'general' && subjectLower.includes('general'));
+
+          if (!matchesFeedbackType && !matchesSubjectKeyword) {
+            return false;
+          }
+        }
+        // Search filter
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          return (
+            conv.name?.toLowerCase().includes(query) ||
+            conv.email.toLowerCase().includes(query) ||
+            conv.subject.toLowerCase().includes(query) ||
+            conv.feedbackMessage?.toLowerCase().includes(query) ||
+            conv.messages.some((m) =>
+              m.body_text?.toLowerCase().includes(query),
+            )
+          );
+        }
+        return true;
       })
       .sort(
         (a, b) =>
-          new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime(),
+          new Date(b.lastActivity).getTime() -
+          new Date(a.lastActivity).getTime(),
       );
   })();
 
   const currentConversation = conversations.find(
-    (c) => c.email === selectedConversation,
+    (c) => c.id === selectedConversationId,
   );
 
   // Mark messages as read when conversation is selected
@@ -134,7 +339,7 @@ export default function InboxPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      refetch();
+      refetchEmails();
     },
   });
 
@@ -147,7 +352,7 @@ export default function InboxPage() {
         markAsRead.mutate(unreadIds);
       }
     }
-  }, [selectedConversation]);
+  }, [selectedConversationId]);
 
   // Send reply
   const sendReply = useMutation({
@@ -162,13 +367,13 @@ export default function InboxPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          feedbackId: lastInbound?.feedback_id || 'direct-email',
+          feedbackId: currentConversation.feedbackId || 'direct-email',
           to: currentConversation.email,
-          subject: `Re: ${lastInbound?.subject || 'Your message'}`,
+          subject: `Re: ${currentConversation.subject}`,
           message,
           userName: currentConversation.name || currentConversation.email,
-          originalMessage: '',
-          feedbackType: 'email',
+          originalMessage: currentConversation.feedbackMessage || '',
+          feedbackType: currentConversation.feedbackType || 'email',
           inReplyTo: lastInbound?.message_id,
         }),
       });
@@ -198,36 +403,142 @@ export default function InboxPage() {
     sendReply.mutate(message);
   };
 
-  // Convert messages to ChatMessage format
+  // Send new conversation
+  const handleSendNewConversation = async () => {
+    if (!newEmail.trim() || !newSubject.trim() || !newMessage.trim()) {
+      toast({
+        title: 'Missing fields',
+        description: 'Please fill in all fields',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSendingNew(true);
+    try {
+      const response = await fetch('/api/feedback/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          feedbackId: 'direct-email',
+          to: newEmail.trim(),
+          subject: newSubject.trim(),
+          message: newMessage.trim(),
+          userName: newEmail.trim().split('@')[0],
+          originalMessage: '',
+          feedbackType: 'email',
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to send message');
+      }
+
+      toast({ title: 'Message sent' });
+      setComposeOpen(false);
+      setNewEmail('');
+      setNewSubject('');
+      setNewMessage('');
+      refetch();
+    } catch (error) {
+      toast({
+        title: 'Failed to send',
+        description:
+          error instanceof Error ? error.message : 'An error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingNew(false);
+    }
+  };
+
+  // Convert to ChatMessage format
   const chatMessages: ChatMessage[] = currentConversation
-    ? currentConversation.messages.map((m) => ({
-        id: m.id,
-        content: m.body_text || '',
-        timestamp: m.created_at,
-        direction: m.direction,
-        subject: m.subject || undefined,
-      }))
+    ? [
+        // Original feedback as first message if exists
+        ...(currentConversation.feedbackMessage
+          ? [
+              {
+                id: `feedback-${currentConversation.feedbackId}`,
+                content: currentConversation.feedbackMessage,
+                timestamp: currentConversation.feedbackCreatedAt!,
+                direction: 'inbound' as const,
+                subject: 'Original Feedback',
+              },
+            ]
+          : []),
+        // Email thread messages
+        ...currentConversation.messages.map((m) => ({
+          id: m.id,
+          content: m.body_text || '',
+          timestamp: m.created_at,
+          direction: m.direction,
+          subject: m.subject || undefined,
+        })),
+      ]
     : [];
 
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const stats = {
+    total: conversations.length,
+    unread: conversations.reduce((sum, c) => sum + c.unreadCount, 0),
+    pending: conversations.filter((c) => c.hasUnreplied).length,
+  };
 
   return (
     <div className="flex h-full overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
       {/* Conversations List */}
-      <div className="flex w-80 flex-shrink-0 flex-col border-r">
+      <div className="flex w-96 flex-shrink-0 flex-col border-r">
         <div className="flex flex-shrink-0 items-center justify-between border-b p-4">
           <div className="flex items-center gap-2">
             <Inbox className="h-5 w-5" />
             <span className="font-semibold">Inbox</span>
-            {totalUnread > 0 && (
-              <span className="rounded-full bg-blue-500 px-2 py-0.5 text-xs text-white">
-                {totalUnread}
+            {stats.pending > 0 && (
+              <span className="rounded-full bg-orange-500 px-2 py-0.5 text-xs text-white">
+                {stats.pending}
               </span>
             )}
           </div>
-          <Button variant="ghost" size="sm" onClick={() => refetch()}>
-            <RefreshCw className={cn('h-4 w-4', isLoading && 'animate-spin')} />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setComposeOpen(true)}
+              title="New conversation"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => refetch()}>
+              <RefreshCw
+                className={cn('h-4 w-4', isLoading && 'animate-spin')}
+              />
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex-shrink-0 space-y-2 border-b p-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-9 text-sm"
+            />
+          </div>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue placeholder="All types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Messages</SelectItem>
+              <SelectItem value="general">General Feedback</SelectItem>
+              <SelectItem value="bug">Bug Reports</SelectItem>
+              <SelectItem value="feature">Feature Requests</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <ScrollArea className="min-h-0 flex-1">
@@ -241,52 +552,89 @@ export default function InboxPage() {
             </div>
           ) : (
             <div className="divide-y">
-              {conversations.map((conv) => (
-                <button
-                  key={conv.email}
-                  onClick={() => setSelectedConversation(conv.email)}
-                  className={cn(
-                    'w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
-                    selectedConversation === conv.email &&
-                      'bg-gray-100 dark:bg-gray-800',
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span
+              {conversations.map((conv) => {
+                const typeConfig = conv.feedbackType
+                  ? feedbackTypeConfig[conv.feedbackType] ||
+                    feedbackTypeConfig.other
+                  : null;
+                const TypeIcon = typeConfig?.icon;
+
+                return (
+                  <button
+                    key={conv.id}
+                    onClick={() => setSelectedConversationId(conv.id)}
+                    className={cn(
+                      'w-full p-4 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-800',
+                      selectedConversationId === conv.id &&
+                        'bg-gray-100 dark:bg-gray-800',
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <User className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={cn(
+                              'truncate text-sm',
+                              (conv.unreadCount > 0 || conv.hasUnreplied) &&
+                                'font-semibold',
+                            )}
+                          >
+                            {conv.name || conv.email.split('@')[0]}
+                          </span>
+                          <span className="flex-shrink-0 text-xs text-muted-foreground">
+                            {formatTime(conv.lastActivity)}
+                          </span>
+                        </div>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {conv.email}
+                        </p>
+                        <div className="mt-1 flex items-center gap-2">
+                          {typeConfig && TypeIcon && (
+                            <Badge
+                              variant="secondary"
+                              className={cn(
+                                'px-1.5 py-0 text-xs',
+                                typeConfig.color,
+                              )}
+                            >
+                              <TypeIcon className="mr-1 h-3 w-3" />
+                              {typeConfig.label}
+                            </Badge>
+                          )}
+                          <span className="truncate text-xs text-muted-foreground">
+                            {conv.subject}
+                          </span>
+                        </div>
+                        <p
                           className={cn(
-                            'truncate text-sm',
-                            conv.unreadCount > 0 && 'font-semibold',
+                            'mt-1 truncate text-sm text-muted-foreground',
+                            (conv.unreadCount > 0 || conv.hasUnreplied) &&
+                              'font-medium text-foreground',
                           )}
                         >
-                          {conv.name || conv.email.split('@')[0]}
-                        </span>
-                        <span className="ml-2 flex-shrink-0 text-xs text-muted-foreground">
-                          {formatTime(conv.lastDate)}
-                        </span>
+                          {conv.messages.length > 0
+                            ? conv.messages[conv.messages.length - 1]
+                                .body_text || conv.subject
+                            : conv.feedbackMessage || conv.subject}
+                        </p>
                       </div>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {conv.email}
-                      </p>
-                      <p
-                        className={cn(
-                          'mt-1 truncate text-sm text-muted-foreground',
-                          conv.unreadCount > 0 && 'font-medium text-foreground',
-                        )}
-                      >
-                        {conv.lastMessage}
-                      </p>
+                      {(conv.unreadCount > 0 || conv.hasUnreplied) && (
+                        <Circle
+                          className={cn(
+                            'h-2.5 w-2.5 flex-shrink-0',
+                            conv.unreadCount > 0
+                              ? 'fill-blue-500 text-blue-500'
+                              : 'fill-orange-500 text-orange-500',
+                          )}
+                        />
+                      )}
                     </div>
-                    {conv.unreadCount > 0 && (
-                      <Circle className="h-2.5 w-2.5 flex-shrink-0 fill-blue-500 text-blue-500" />
-                    )}
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </ScrollArea>
@@ -300,20 +648,33 @@ export default function InboxPage() {
           isSending={sendReply.isPending}
           showAttachments={false}
           headerContent={
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <User className="h-5 w-5 text-primary" />
+            <>
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                  <User className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">
+                    {currentConversation.name ||
+                      currentConversation.email.split('@')[0]}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {currentConversation.email}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium">
-                  {currentConversation.name ||
-                    currentConversation.email.split('@')[0]}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {currentConversation.email}
-                </p>
-              </div>
-            </div>
+              {currentConversation.feedbackType && (
+                <Badge
+                  variant="secondary"
+                  className={
+                    feedbackTypeConfig[currentConversation.feedbackType]?.color
+                  }
+                >
+                  {feedbackTypeConfig[currentConversation.feedbackType]
+                    ?.label || 'Other'}
+                </Badge>
+              )}
+            </>
           }
         />
       ) : (
@@ -323,8 +684,78 @@ export default function InboxPage() {
           <p className="text-sm">
             Choose a conversation from the left to start messaging
           </p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => setComposeOpen(true)}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            New Conversation
+          </Button>
         </div>
       )}
+
+      {/* Compose New Conversation Dialog */}
+      <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>New Conversation</DialogTitle>
+            <DialogDescription>
+              Send a new email to start a conversation
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="to">To</Label>
+              <Input
+                id="to"
+                type="email"
+                placeholder="email@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                placeholder="Enter subject..."
+                value={newSubject}
+                onChange={(e) => setNewSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                placeholder="Type your message..."
+                rows={6}
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setComposeOpen(false)}
+              disabled={isSendingNew}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSendNewConversation} disabled={isSendingNew}>
+              {isSendingNew ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -3,13 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import {
-  Users,
-  Mail,
-  MessageSquare,
-  LayoutDashboard,
-  Inbox,
-} from 'lucide-react';
+import { Users, Mail, LayoutDashboard, Inbox } from 'lucide-react';
 
 const navItems = [
   {
@@ -21,11 +15,6 @@ const navItems = [
     title: 'Inbox',
     href: '/admin/inbox',
     icon: Inbox,
-  },
-  {
-    title: 'Feedback',
-    href: '/admin/feedback',
-    icon: MessageSquare,
   },
   {
     title: 'Leads',
