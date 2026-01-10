@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { Resend } from 'resend';
 
 // Use service role for webhook (no user auth)
 const supabase = createClient(
@@ -7,34 +8,40 @@ const supabase = createClient(
   process.env.SERVICE_ROLE_KEY!,
 );
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // Resend inbound email webhook payload type
 interface ResendInboundEmail {
   type: 'email.received';
   created_at: string;
   data: {
-    id: string;
-    object: 'email';
+    email_id: string;
     to: string[];
     from: string;
     subject: string;
-    text: string;
-    html: string;
+    message_id?: string;
     created_at: string;
-    headers: {
+    // These may or may not be present in webhook
+    text?: string;
+    html?: string;
+    headers?: {
       'message-id'?: string;
       'in-reply-to'?: string;
       references?: string;
-      from?: string;
-      to?: string;
-      subject?: string;
-      date?: string;
     };
-    attachments?: Array<{
-      filename: string;
-      content_type: string;
-      size: number;
-    }>;
   };
+}
+
+// Full email response from Resend API
+interface ResendEmailDetails {
+  id: string;
+  from: string;
+  to: string[];
+  subject: string;
+  text?: string;
+  html?: string;
+  created_at: string;
+  headers?: Record<string, string>;
 }
 
 // Extract email and name from "Name <email@example.com>" format
@@ -116,16 +123,69 @@ export async function POST(request: Request) {
 
     const payload: ResendInboundEmail = await request.json();
 
+    console.log(
+      '[Inbound Email] Received webhook:',
+      JSON.stringify(payload, null, 2),
+    );
+
     // Only process email.received events
     if (payload.type !== 'email.received') {
       return NextResponse.json({ message: 'Event type ignored' });
     }
 
-    const email = payload.data;
-    const headers = email.headers || {};
+    const webhookData = payload.data;
+    let emailText = webhookData.text;
+    let emailHtml = webhookData.html;
+    let headers = webhookData.headers || {};
+
+    // If text/html not in webhook, fetch from Resend API
+    if (!emailText && !emailHtml && webhookData.email_id) {
+      console.log(
+        '[Inbound Email] Fetching email details for:',
+        webhookData.email_id,
+      );
+      try {
+        // Use Resend API to get full email details
+        const response = await fetch(
+          `https://api.resend.com/emails/${webhookData.email_id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            },
+          },
+        );
+
+        if (response.ok) {
+          const emailDetails: ResendEmailDetails = await response.json();
+          console.log(
+            '[Inbound Email] Fetched email details:',
+            JSON.stringify(emailDetails, null, 2),
+          );
+          emailText = emailDetails.text;
+          emailHtml = emailDetails.html;
+          if (emailDetails.headers) {
+            headers = {
+              ...headers,
+              ...emailDetails.headers,
+            };
+          }
+        } else {
+          console.error(
+            '[Inbound Email] Failed to fetch email details:',
+            response.status,
+            await response.text(),
+          );
+        }
+      } catch (fetchError) {
+        console.error(
+          '[Inbound Email] Error fetching email details:',
+          fetchError,
+        );
+      }
+    }
 
     // Parse sender info
-    const sender = parseEmailAddress(email.from);
+    const sender = parseEmailAddress(webhookData.from);
 
     // Try to find associated feedback
     let feedbackId: string | null = null;
@@ -147,22 +207,21 @@ export async function POST(request: Request) {
     }
 
     // Store the email in database
-    // Note: "references" is a reserved keyword in PostgreSQL, so we use the column name directly
-    // Supabase client handles the quoting automatically
-    const { data, error } = await supabase.from('email_threads').insert({
-      message_id: headers['message-id'] || email.id,
+    const { error } = await supabase.from('email_threads').insert({
+      message_id:
+        webhookData.message_id || headers['message-id'] || webhookData.email_id,
       from_email: sender.email,
       from_name: sender.name,
-      to_email: email.to[0] || 'support@itracksy.com',
-      subject: email.subject,
-      body_text: email.text,
-      body_html: email.html,
+      to_email: webhookData.to[0] || 'support@itracksy.com',
+      subject: webhookData.subject,
+      body_text: emailText || '',
+      body_html: emailHtml || '',
       in_reply_to: headers['in-reply-to'] || null,
-      references: headers.references || null, // Supabase handles reserved keyword quoting
+      references: headers.references || null,
       feedback_id: feedbackId,
       direction: 'inbound',
       is_read: false,
-      received_at: email.created_at,
+      received_at: webhookData.created_at,
     });
 
     if (error) {
@@ -174,8 +233,10 @@ export async function POST(request: Request) {
     }
 
     console.log('[Inbound Email] Stored email from:', sender.email, {
-      subject: email.subject,
+      subject: webhookData.subject,
       feedbackId,
+      hasText: !!emailText,
+      hasHtml: !!emailHtml,
     });
 
     return NextResponse.json({ success: true, feedbackId });
