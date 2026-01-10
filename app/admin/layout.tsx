@@ -9,6 +9,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   ChevronRight,
+  Inbox,
 } from 'lucide-react';
 
 const navItems = [
@@ -16,6 +17,11 @@ const navItems = [
     title: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Inbox',
+    href: '/admin/inbox',
+    icon: Inbox,
   },
   {
     title: 'Feedback',

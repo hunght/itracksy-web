@@ -6,6 +6,9 @@ import { getAllTags, getPostsByTagSlug, sortTagsByCount } from '@/lib/utils';
 import { slug } from 'github-slugger';
 import { Metadata } from 'next';
 
+// Force dynamic rendering to avoid prerender issues with Next.js 16
+export const dynamic = 'force-dynamic';
+
 interface TagPageProps {
   params: Promise<{
     tag: string;
@@ -34,12 +37,7 @@ export async function generateMetadata({
   };
 }
 
-export const generateStaticParams = () => {
-  const posts = getAllPosts();
-  const tags = getAllTags(posts);
-  const paths = Object.keys(tags).map((tag) => ({ tag: slug(tag) }));
-  return paths;
-};
+// Removed generateStaticParams since we're using dynamic rendering
 
 export default async function TagPage({ params }: TagPageProps) {
   const { tag } = await params;
