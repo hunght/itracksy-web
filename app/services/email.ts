@@ -29,7 +29,7 @@ async function sendEmailWithRetry(
     try {
       const { data, error } = await resend.emails.send({
         ...emailOptions,
-        from: 'iTracksy <support@buddybeep.com>',
+        from: 'iTracksy <support@itracksy.com>',
       });
 
       if (error) {
@@ -166,7 +166,7 @@ export async function sendFeedbackNotificationEmail(
     throw error;
   }
 
-  const supportEmail = isDevelopment ? devEmail : 'support@buddybeep.com';
+  const supportEmail = isDevelopment ? devEmail : 'support@itracksy.com';
   console.log(
     '[sendFeedbackNotificationEmail] Sending feedback notification to:',
     supportEmail,
