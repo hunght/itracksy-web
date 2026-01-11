@@ -210,13 +210,61 @@ export default function Home() {
 
                     {/* Video content */}
                     <video
-                      src="/screenshots/focus-demo.mp4"
+                      src="/screenshots/focus-demo.webm"
                       autoPlay
                       loop
                       muted
                       playsInline
                       className="w-full"
                       style={{ aspectRatio: '1468/1068' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Distraction Blocking Feature */}
+              <div className="mx-auto mt-16 max-w-5xl">
+                <div className="mb-8 text-center">
+                  <h2 className="mb-3 text-2xl font-bold text-slate-700 dark:text-slate-200 md:text-3xl">
+                    Block Distractions, Stay Focused
+                  </h2>
+                  <p className="mx-auto max-w-2xl text-muted-foreground">
+                    Automatically block distracting websites during focus
+                    sessions. When you try to access a blocked site, iTracksy
+                    gently reminds you to stay on track.
+                  </p>
+                </div>
+
+                <div className="relative">
+                  {/* Glow effect behind video */}
+                  <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20 blur-2xl"></div>
+
+                  {/* macOS-style window frame */}
+                  <div className="relative overflow-hidden rounded-xl border border-slate-200/50 bg-slate-900 shadow-2xl dark:border-slate-700/50">
+                    {/* Window title bar */}
+                    <div className="flex h-10 items-center gap-2 border-b border-slate-700 bg-slate-800 px-4">
+                      <div className="flex gap-1.5">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-xs text-slate-400">
+                          Distraction Blocking
+                        </span>
+                      </div>
+                      <div className="w-12"></div>
+                    </div>
+
+                    {/* Video content */}
+                    <video
+                      src="/screenshots/blocking-feature.webm"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="w-full"
+                      style={{ aspectRatio: '1720/720' }}
                     />
                   </div>
                 </div>
@@ -339,399 +387,166 @@ export default function Home() {
                 </h2>
               </div>
 
-              {/* Activity Tracking Feature */}
-              <div className="mb-24 flex flex-col items-center md:flex-row md:items-start md:justify-between">
-                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">Activity Tracking</h3>
+              {/* Feature Grid */}
+              <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                {/* Focus Sessions */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-amber-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-amber-500"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-xl font-bold">Focus Sessions</h3>
                   <p className="text-slate-300">
-                    Track your work sessions effortlessly. iTracksy
-                    automatically captures your activities, helping you
-                    understand where your time goes without manual input.
+                    Start timed or unlimited focus sessions. Track your
+                    productive time with visual progress indicators and stay in
+                    the zone.
                   </p>
-                  <ul className="space-y-2 text-slate-300">
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Automatic activity detection</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Focus session tracking</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Seamless background operation</span>
-                    </li>
-                  </ul>
                 </div>
-                <div className="md:w-3/5 lg:w-1/2">
-                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
-                    <Image
-                      src="/screenshots/activity-tracking.png"
-                      alt="Activity tracking interface in iTracksy"
-                      width={800}
-                      height={500}
-                      className="w-full"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-              </div>
 
-              {/* Project Management Feature */}
-              <div className="mb-24 flex flex-col-reverse items-center md:flex-row md:items-start md:justify-between">
-                <div className="md:w-3/5 lg:w-1/2">
-                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
-                    <Image
-                      src="/screenshots/project-management.png"
-                      alt="Project management kanban board in iTracksy"
-                      width={800}
-                      height={500}
-                      className="w-full"
-                      loading="lazy"
-                    />
+                {/* Distraction Blocking */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-red-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-red-500"
+                    >
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                    </svg>
                   </div>
+                  <h3 className="mb-2 text-xl font-bold">
+                    Distraction Blocking
+                  </h3>
+                  <p className="text-slate-300">
+                    Block distracting websites during focus sessions. Get gentle
+                    reminders when you try to access blocked sites.
+                  </p>
                 </div>
-                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">Project Management</h3>
+
+                {/* Smart Analytics */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-blue-500"
+                    >
+                      <path d="M3 3v18h18"></path>
+                      <path d="m19 9-5 5-4-4-3 3"></path>
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-xl font-bold">Smart Analytics</h3>
+                  <p className="text-slate-300">
+                    Focus Score, peak hours analysis, and AI-powered insights
+                    help you understand and improve your productivity patterns.
+                  </p>
+                </div>
+
+                {/* Activity Tracking */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-green-500"
+                    >
+                      <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-xl font-bold">Activity Tracking</h3>
+                  <p className="text-slate-300">
+                    Automatic activity detection captures your work sessions
+                    without manual input. Know exactly where your time goes.
+                  </p>
+                </div>
+
+                {/* Project Management */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-purple-500"
+                    >
+                      <rect x="3" y="3" width="7" height="9"></rect>
+                      <rect x="14" y="3" width="7" height="5"></rect>
+                      <rect x="14" y="12" width="7" height="9"></rect>
+                      <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                  </div>
+                  <h3 className="mb-2 text-xl font-bold">Project Management</h3>
                   <p className="text-slate-300">
                     Organize tasks with an intuitive kanban board. Drag and drop
-                    cards between columns to update status and keep your
-                    projects moving forward.
+                    cards between columns to keep projects moving forward.
                   </p>
-                  <ul className="space-y-2 text-slate-300">
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Intuitive drag-and-drop interface</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Custom workflow columns</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Time tracking integration</span>
-                    </li>
-                  </ul>
                 </div>
-              </div>
 
-              {/* Time Analytics Feature */}
-              <div className="mb-24 flex flex-col items-center md:flex-row md:items-start md:justify-between">
-                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">
-                    Smart Analytics Dashboard
-                  </h3>
-                  <p className="text-slate-300">
-                    Understand your productivity with our Three-Layer
-                    Progressive Disclosure system. From instant Focus Score to
-                    deep strategic insights, get the right level of detail when
-                    you need it.
-                  </p>
-                  <ul className="space-y-2 text-slate-300">
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>
-                        Focus Score with instant productivity feedback
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>
-                        Peak hours analysis &amp; work style detection
-                      </span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>
-                        AI-powered productivity insights &amp; recommendations
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="md:w-3/5 lg:w-1/2">
-                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
-                    <Image
-                      src="/screenshots/time-analytics.png"
-                      alt="Time analytics dashboard in iTracksy"
-                      width={800}
-                      height={500}
-                      className="w-full"
-                      loading="lazy"
-                    />
+                {/* Rule-Based Classification */}
+                <div className="rounded-xl border border-slate-700 bg-slate-900/50 p-6">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-500/20">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-orange-500"
+                    >
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
                   </div>
-                </div>
-              </div>
-
-              {/* Achievements Feature */}
-              <div className="mb-24 flex flex-col-reverse items-center md:flex-row md:items-start md:justify-between">
-                <div className="md:w-3/5 lg:w-1/2">
-                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
-                    <Image
-                      src="/screenshots/achievements.png"
-                      alt="Achievement system in iTracksy"
-                      width={800}
-                      height={500}
-                      className="w-full"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">Achievements</h3>
+                  <h3 className="mb-2 text-xl font-bold">Smart Rules</h3>
                   <p className="text-slate-300">
-                    Stay motivated with gamification. Unlock achievements as you
-                    reach productivity milestones, making productivity
-                    improvement fun and rewarding.
+                    Create custom rules to automatically classify activities by
+                    app name, website, or pattern. Your workflow, your rules.
                   </p>
-                  <ul className="space-y-2 text-slate-300">
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Productivity milestone badges</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Progress tracking</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Motivational reward system</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              {/* Rule-Based Classification Feature */}
-              <div className="flex flex-col items-center md:flex-row md:items-start md:justify-between">
-                <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">
-                    Rule-Based Classification
-                  </h3>
-                  <p className="text-slate-300">
-                    Customize how activities are categorized. Create rules to
-                    automatically classify your work based on application names,
-                    websites, or custom patterns.
-                  </p>
-                  <ul className="space-y-2 text-slate-300">
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Custom categorization rules</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Pattern matching for applications</span>
-                    </li>
-                    <li className="flex items-start">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2 mt-1 text-amber-500"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span>Website-based activity grouping</span>
-                    </li>
-                  </ul>
-                </div>
-                <div className="md:w-3/5 lg:w-1/2">
-                  <div className="transform overflow-hidden rounded-lg border-4 border-slate-700 shadow-xl transition-all hover:scale-105 hover:shadow-2xl">
-                    <Image
-                      src="/screenshots/rule-classification.png"
-                      alt="Rule-based classification interface in iTracksy"
-                      width={800}
-                      height={500}
-                      className="w-full"
-                      loading="lazy"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
