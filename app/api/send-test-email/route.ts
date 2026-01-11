@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       const htmlEmail = generateEmailHtml(emailContent, 'Test User');
 
       emailData = await resend.emails.send({
-        from: 'iTracksy <noreply@itracksy.com>',
+        from: 'iTracksy <support@itracksy.com>',
         to: [testEmail.trim()],
         subject: `[TEST] ${emailSubject}`,
         html: htmlEmail,
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
       });
 
       emailData = await resend.emails.send({
-        from: 'iTracksy <noreply@itracksy.com>',
+        from: 'iTracksy <support@itracksy.com>',
         to: [testEmail.trim()],
         subject: `[TEST] ${emailSubject}`,
         react: emailElement as React.ReactElement,

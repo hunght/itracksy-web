@@ -256,7 +256,7 @@ async function processCampaignsInBackground(
           );
 
           const result = await resend.emails.send({
-            from: 'iTracksy <noreply@itracksy.com>',
+            from: 'iTracksy <support@itracksy.com>',
             to: recipientEmail,
             subject: emailSubject,
             html: htmlEmail,
@@ -289,7 +289,7 @@ async function processCampaignsInBackground(
           // Send email using Resend with React template
           const emailElement = EmailTemplate({ name: recipientName });
           const result = await resend.emails.send({
-            from: 'iTracksy <noreply@itracksy.com>',
+            from: 'iTracksy <support@itracksy.com>',
             to: recipientEmail,
             subject: emailSubject,
             react: emailElement as React.ReactElement,
