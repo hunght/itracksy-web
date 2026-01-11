@@ -166,8 +166,9 @@ export default function Home() {
                   className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl"
                   itemProp="description"
                 >
-                  Automatic time tracking with focus sessions and detailed
-                  insights. Free, open-source, and privacy-focused.
+                  Smart time tracking with focus sessions, actionable analytics,
+                  and productivity insights. Free, open-source, and
+                  privacy-focused.
                 </p>
               </div>
 
@@ -215,7 +216,7 @@ export default function Home() {
                       muted
                       playsInline
                       className="w-full"
-                      style={{ aspectRatio: '800/582' }}
+                      style={{ aspectRatio: '1468/1068' }}
                     />
                   </div>
                 </div>
@@ -495,11 +496,14 @@ export default function Home() {
               {/* Time Analytics Feature */}
               <div className="mb-24 flex flex-col items-center md:flex-row md:items-start md:justify-between">
                 <div className="mb-8 flex flex-col space-y-4 md:mb-0 md:w-2/5">
-                  <h3 className="text-2xl font-bold">Time Analytics</h3>
+                  <h3 className="text-2xl font-bold">
+                    Smart Analytics Dashboard
+                  </h3>
                   <p className="text-slate-300">
-                    Gain insights from powerful analytics. Visualize how you
-                    spend your time with beautiful, interactive charts that
-                    reveal productivity patterns.
+                    Understand your productivity with our Three-Layer
+                    Progressive Disclosure system. From instant Focus Score to
+                    deep strategic insights, get the right level of detail when
+                    you need it.
                   </p>
                   <ul className="space-y-2 text-slate-300">
                     <li className="flex items-start">
@@ -517,7 +521,9 @@ export default function Home() {
                       >
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>Interactive data visualization</span>
+                      <span>
+                        Focus Score with instant productivity feedback
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <svg
@@ -534,7 +540,9 @@ export default function Home() {
                       >
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>Productivity trend analysis</span>
+                      <span>
+                        Peak hours analysis &amp; work style detection
+                      </span>
                     </li>
                     <li className="flex items-start">
                       <svg
@@ -551,7 +559,9 @@ export default function Home() {
                       >
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
-                      <span>Customizable reporting periods</span>
+                      <span>
+                        AI-powered productivity insights &amp; recommendations
+                      </span>
                     </li>
                   </ul>
                 </div>
