@@ -549,6 +549,55 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+
+              {/* AI Export Feature Highlight */}
+              <div className="mt-12">
+                <div className="mb-8 text-center">
+                  <span className="mb-2 inline-block rounded-full bg-purple-500/20 px-4 py-1 text-sm font-medium text-purple-400">
+                    NEW FEATURE
+                  </span>
+                  <h3 className="text-2xl font-bold md:text-3xl">
+                    AI-Powered Deep Work Analysis
+                  </h3>
+                  <p className="mx-auto mt-3 max-w-2xl text-slate-300">
+                    Export your productivity data for AI analysis. Detect
+                    context switches, measure focus streaks, and get
+                    personalized insights into your deep work patterns.
+                  </p>
+                </div>
+
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute -inset-4 rounded-2xl bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-purple-500/20 blur-2xl"></div>
+
+                  {/* macOS-style window frame */}
+                  <div className="relative overflow-hidden rounded-xl border border-slate-700/50 bg-slate-900 shadow-2xl">
+                    {/* Window title bar */}
+                    <div className="flex h-10 items-center gap-2 border-b border-slate-700 bg-slate-800 px-4">
+                      <div className="flex gap-1.5">
+                        <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                        <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                      </div>
+                      <div className="flex-1 text-center">
+                        <span className="text-xs text-slate-400">
+                          AI Export - Deep Work Analysis
+                        </span>
+                      </div>
+                      <div className="w-12"></div>
+                    </div>
+
+                    {/* Image content */}
+                    <Image
+                      src="/screenshots/ai-export-deep-work.png"
+                      alt="AI Export feature showing deep work analysis with context switch detection and focus streaks"
+                      width={1468}
+                      height={1068}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
