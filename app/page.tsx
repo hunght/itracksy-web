@@ -550,19 +550,19 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* AI Export Feature Highlight */}
+              {/* AI Analytics Dashboard Feature Highlight */}
               <div className="mt-12">
                 <div className="mb-8 text-center">
                   <span className="mb-2 inline-block rounded-full bg-purple-500/20 px-4 py-1 text-sm font-medium text-purple-400">
                     NEW FEATURE
                   </span>
                   <h3 className="text-2xl font-bold md:text-3xl">
-                    AI-Powered Deep Work Analysis
+                    AI Analytics Dashboard
                   </h3>
                   <p className="mx-auto mt-3 max-w-2xl text-slate-300">
-                    Export your productivity data for AI analysis. Detect
-                    context switches, measure focus streaks, and get
-                    personalized insights into your deep work patterns.
+                    Visual productivity insights at a glance. Track your
+                    productivity score, context switches, deep work blocks, and
+                    activity patterns with our new AI-powered dashboard.
                   </p>
                 </div>
 
@@ -581,7 +581,7 @@ export default function Home() {
                       </div>
                       <div className="flex-1 text-center">
                         <span className="text-xs text-slate-400">
-                          AI Export - Deep Work Analysis
+                          AI Analytics Dashboard
                         </span>
                       </div>
                       <div className="w-12"></div>
@@ -589,10 +589,10 @@ export default function Home() {
 
                     {/* Image content */}
                     <Image
-                      src="/screenshots/ai-export-deep-work.png"
-                      alt="AI Export feature showing deep work analysis with context switch detection and focus streaks"
-                      width={1468}
-                      height={1068}
+                      src="/screenshots/ai-analytics-dashboard.png"
+                      alt="AI Analytics Dashboard showing productivity score, context switches, activity timeline, and top usage"
+                      width={1280}
+                      height={800}
                       className="w-full"
                     />
                   </div>
