@@ -12,6 +12,7 @@ function getAdminEmails(): string[] {
   return [
     'admin@itracksy.com',
     'hth321@gmail.com',
+    'phanviethieu3008@gmail.com',
     // Add more admin emails here
   ];
 }
